@@ -137,7 +137,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
       backgroundColor: const Color(0xFF062C4A),
       body: Center(
         child: Image.asset(
-          'assets/chatly.gif',
+          'assets/chatly.logo.png',
           fit: BoxFit.cover,
         ),
       ),

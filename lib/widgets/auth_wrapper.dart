@@ -11,7 +11,6 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
 
-    // Show loading screen while checking auth state
     if (authProvider.isLoading) {
       return const Scaffold(
         body: Center(
@@ -20,12 +19,10 @@ class AuthWrapper extends StatelessWidget {
       );
     }
 
-    // Show login screen if not authenticated
     if (!authProvider.isAuthenticated && !authProvider.isGuest) {
       return const LoginScreen();
     }
 
-    // Show chat list if authenticated or guest
     return const ChatListScreen();
   }
 }

@@ -26,7 +26,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = context.read<AuthProvider>();
       if (authProvider.currentUser != null) {
-        context.read<ChatProvider>().loadChats(authProvider.currentUser!.id);
+        // The stream is now set up in loadChats
+        context.read<ChatProvider>().loadChats(authProvider.currentUser!.id, useCache: true);
       }
     });
   }
@@ -40,14 +41,19 @@ class _ChatListScreenState extends State<ChatListScreen> {
   void _toggleSearch() {
     setState(() {
       _isSearching = !_isSearching;
-      if (!_isSearching) {
-        _searchController.clear();
-        context.read<ChatProvider>().searchUsers(
-          '',
-          context.read<AuthProvider>().currentUser!.id,
-        );
-      }
     });
+
+    final authProvider = context.read<AuthProvider>();
+    final chatProvider = context.read<ChatProvider>();
+
+    if (_isSearching) {
+      // When search is enabled, populate suggestions (recent users)
+      chatProvider.searchUsers('', authProvider.currentUser!.id);
+    } else {
+      // When search is closed, clear search UI and results
+      _searchController.clear();
+      chatProvider.clearSearchResults();
+    }
   }
 
   Future<void> _startNewChat(UserModel user) async {
@@ -63,6 +69,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
       context.push('/chat/${chat.id}', extra: user);
       setState(() => _isSearching = false);
       _searchController.clear();
+    } else {
+      // Provide user feedback if chat creation/fetch failed
+      final msg = chatProvider.errorMessage ?? 'Unable to open chat. Please try again.';
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
     }
   }
 

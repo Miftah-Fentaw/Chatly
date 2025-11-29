@@ -4,21 +4,18 @@ import 'package:chatapp/models/chat_model.dart';
 import 'package:chatapp/models/message_model.dart';
 import 'package:chatapp/models/user_model.dart';
 
-/// Service class for handling chat-related operations with Firebase Firestore
 class FirebaseChatService {
   final FirebaseFirestore _firestore = FirebaseConfig.firestore;
   final String _chatsCollection = 'chats';
   final String _messagesSubcollection = 'messages';
   final String _usersCollection = 'users';
 
-  // Singleton instance
   static final FirebaseChatService _instance = FirebaseChatService._internal();
-  
+
   factory FirebaseChatService() => _instance;
-  
+
   FirebaseChatService._internal();
 
-  /// Get a stream of chats for a specific user
   Stream<List<ChatModel>> getChatsStream(String userId) {
     try {
       return _firestore
@@ -28,16 +25,16 @@ class FirebaseChatService {
           .snapshots()
           .asyncMap((snapshot) async {
         final List<ChatModel> chats = [];
-        
+
         for (var doc in snapshot.docs) {
           final chatData = doc.data();
           final participants = await _getParticipants(chatData['participantIds'] as List<dynamic>);
-          
+
           chats.add(ChatModel(
             id: doc.id,
             participantIds: List<String>.from(chatData['participantIds'] as List<dynamic>),
             participants: participants,
-            lastMessage: chatData['lastMessage'] != null 
+            lastMessage: chatData['lastMessage'] != null
                 ? MessageModel.fromJson({
                     ...chatData['lastMessage'] as Map<String, dynamic>,
                     'id': '${doc.id}_last',
@@ -47,7 +44,7 @@ class FirebaseChatService {
             unreadCount: (chatData['unreadCounts'] as Map<String, dynamic>?)?[userId] ?? 0,
           ));
         }
-        
+
         return chats;
       });
     } catch (e) {
@@ -56,7 +53,6 @@ class FirebaseChatService {
     }
   }
 
-  /// Get messages for a specific chat
   Stream<List<MessageModel>> getMessagesStream(String chatId, {int limit = 50}) {
     try {
       return _firestore
@@ -80,7 +76,6 @@ class FirebaseChatService {
     }
   }
 
-  /// Send a new message
   Future<MessageModel> sendMessage({
     required String chatId,
     required String senderId,
@@ -106,10 +101,8 @@ class FirebaseChatService {
         metadata: metadata,
       );
 
-      // Add message to the messages subcollection
       await messageRef.set(message.toJson());
 
-      // Update the chat's last message and timestamp
       await _firestore.collection(_chatsCollection).doc(chatId).update({
         'lastMessage': message.toJson(),
         'lastMessageTime': FieldValue.serverTimestamp(),
@@ -123,25 +116,21 @@ class FirebaseChatService {
     }
   }
 
-  /// Create a new chat between users
   Future<ChatModel> createChat({
     required List<String> participantIds,
     String? initialMessage,
   }) async {
     try {
-      // Sort participant IDs for consistent chat lookup
       participantIds = List.from(participantIds)..sort();
-      
-      // Check if chat already exists
+
       final existingChat = await _findExistingChat(participantIds);
       if (existingChat != null) {
         return existingChat;
       }
 
-      // Create new chat
       final chatRef = _firestore.collection(_chatsCollection).doc();
       final now = DateTime.now();
-      
+
       final chatData = {
         'participantIds': participantIds,
         'createdAt': now,
@@ -152,10 +141,9 @@ class FirebaseChatService {
           value: (_) => 0,
         ),
       };
-      
+
       await chatRef.set(chatData);
 
-      // Add initial message if provided
       if (initialMessage != null && initialMessage.isNotEmpty) {
         await sendMessage(
           chatId: chatRef.id,
@@ -177,7 +165,6 @@ class FirebaseChatService {
     }
   }
 
-  /// Mark messages as read for a specific user in a chat
   Future<void> markMessagesAsRead({
     required String chatId,
     required String userId,
@@ -193,37 +180,35 @@ class FirebaseChatService {
     }
   }
 
-  /// Search for users by username or email
   Future<List<UserModel>> searchUsers(String query) async {
     try {
       if (query.isEmpty) return [];
-      
+
       final usernameQuery = _firestore
           .collection(_usersCollection)
           .where('username', isGreaterThanOrEqualTo: query)
           .where('username', isLessThanOrEqualTo: '$query\uf8ff')
           .limit(10);
-      
+
       final emailQuery = _firestore
           .collection(_usersCollection)
           .where('email', isGreaterThanOrEqualTo: query)
           .where('email', isLessThanOrEqualTo: '$query\uf8ff')
           .limit(10);
-      
+
       final results = await Future.wait([
         usernameQuery.get(),
         emailQuery.get(),
       ]);
-      
-      // Combine and deduplicate results
+
       final users = <String, UserModel>{};
-      
+
       for (var snapshot in results) {
         for (var doc in snapshot.docs) {
           users[doc.id] = UserModel.fromJson(doc.data());
         }
       }
-      
+
       return users.values.toList();
     } catch (e) {
       print('Error searching users: $e');
@@ -231,7 +216,6 @@ class FirebaseChatService {
     }
   }
 
-  // Helper method to find an existing chat between participants
   Future<ChatModel?> _findExistingChat(List<String> participantIds) async {
     try {
       final snapshot = await _firestore
@@ -239,12 +223,12 @@ class FirebaseChatService {
           .where('participantIds', isEqualTo: participantIds)
           .limit(1)
           .get();
-      
+
       if (snapshot.docs.isEmpty) return null;
-      
+
       final doc = snapshot.docs.first;
       final data = doc.data();
-      
+
       return ChatModel(
         id: doc.id,
         participantIds: List<String>.from(data['participantIds'] as List<dynamic>),
@@ -256,7 +240,7 @@ class FirebaseChatService {
               })
             : null,
         lastMessageTime: data['lastMessageTime'] as Timestamp?,
-        unreadCount: 0, // This will be updated by the stream
+        unreadCount: 0,
       );
     } catch (e) {
       print('Error finding existing chat: $e');
@@ -264,7 +248,6 @@ class FirebaseChatService {
     }
   }
 
-  // Helper method to get user data for participants
   Future<List<UserModel>> _getParticipants(List<dynamic> participantIds) async {
     try {
       if (participantIds.isEmpty) return [];

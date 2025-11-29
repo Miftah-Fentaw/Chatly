@@ -1,107 +1,8 @@
-// class UserModel {
-//   final String id;
-//   final String email;
-//   final String username;
-//   final String? avatarUrl;
-//   final bool isOnline;
-//   final DateTime lastSeen;
-//   final DateTime createdAt;
-//   final bool isGuest;
+import 'package:flutter/material.dart';
 
-//   UserModel({
-//     required this.id,
-//     required this.email,
-//     required this.username,
-//     this.avatarUrl,
-//     this.isOnline = false,
-//     DateTime? lastSeen,
-//     DateTime? createdAt,
-//     this.isGuest = false,
-//   })  : lastSeen = lastSeen ?? DateTime.now(),
-//         createdAt = createdAt ?? DateTime.now();
-
-//   // Create a guest user
-//   factory UserModel.guest() {
-//     final now = DateTime.now();
-//     return UserModel(
-//       id: 'guest_${now.millisecondsSinceEpoch}',
-//       email: 'guest@example.com',
-//       username: 'Guest User',
-//       isOnline: false,
-//       isGuest: true,
-//     );
-//   }
-
-//   factory UserModel.fromJson(Map<String, dynamic> json) {
-//     return UserModel(
-//       id: json['id'] as String,
-//       email: json['email'] as String? ?? '',
-//       username: json['username'] as String? ?? 'Unknown User',
-//       avatarUrl: json['avatar_url'] as String?,
-//       isOnline: json['is_online'] as bool? ?? false,
-//       lastSeen: json['last_seen'] != null
-//           ? (json['last_seen'] is DateTime
-//               ? json['last_seen'] as DateTime
-//               : DateTime.parse(json['last_seen'] as String))
-//           : DateTime.now(),
-//       createdAt: json['created_at'] != null
-//           ? (json['created_at'] is DateTime
-//               ? json['created_at'] as DateTime
-//               : DateTime.parse(json['created_at'] as String))
-//           : DateTime.now(),
-//       isGuest: json['is_guest'] as bool? ?? false,
-//     );
-//   }
-
-//   Map<String, dynamic> toJson() => {
-//         'id': id,
-//         'email': email,
-//         'username': username,
-//         'avatar_url': avatarUrl,
-//         'is_online': isOnline,
-//         'last_seen': lastSeen.toIso8601String(),
-//         'created_at': createdAt.toIso8601String(),
-//         'is_guest': isGuest,
-//       };
-
-//   UserModel copyWith({
-//     String? id,
-//     String? email,
-//     String? username,
-//     String? avatarUrl,
-//     bool? isOnline,
-//     DateTime? lastSeen,
-//     DateTime? createdAt,
-//     bool? isGuest,
-//   }) {
-//     return UserModel(
-//       id: id ?? this.id,
-//       email: email ?? this.email,
-//       username: username ?? this.username,
-//       avatarUrl: avatarUrl ?? this.avatarUrl,
-//       isOnline: isOnline ?? this.isOnline,
-//       lastSeen: lastSeen ?? this.lastSeen,
-//       createdAt: createdAt ?? this.createdAt,
-//       isGuest: isGuest ?? this.isGuest,
-//     );
-//   }
-
-//   @override
-//   String toString() {
-//     return 'UserModel(id: $id, email: $email, username: $username, isGuest: $isGuest)';
-//   }
-// }
-
-
-
-
-
-
-
-// models/user_model.dart
 class UserModel {
   final String id;
-  final String? email;        // ← now nullable, comes from auth
+  final String? email;
   final String username;
   final String? avatarUrl;
   final bool isOnline;
@@ -132,7 +33,6 @@ class UserModel {
     );
   }
 
-  // This is used for real users: profile data + email from auth
   factory UserModel.fromProfileMap(
     Map<String, dynamic> json, {
     required String? email,
@@ -149,19 +49,32 @@ class UserModel {
     );
   }
 
-  // For loading guest from SharedPreferences
   factory UserModel.fromJson(Map<String, dynamic> json) {
+  try {
     return UserModel(
-      id: json['id'] as String,
-      email: json['email'] as String?,
-      username: json['username'] as String,
-      avatarUrl: json['avatar_url'] as String?,
-      isOnline: json['is_online'] as bool? ?? false,
-      lastSeen: _parseDate(json['last_seen']) ?? DateTime.now(),
-      createdAt: _parseDate(json['created_at']) ?? DateTime.now(),
-      isGuest: json['is_guest'] as bool? ?? true,
+      id: (json['id'] ?? '').toString(),
+      email: json['email']?.toString() ?? '',
+      username: json['username']?.toString() ?? 'Unknown User',
+      avatarUrl: json['avatar_url']?.toString(),
+      isOnline: json['is_online'] == true,
+      lastSeen: json['last_seen'] != null
+          ? DateTime.parse(json['last_seen'].toString())
+          : DateTime.now(),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'].toString())
+          : DateTime.now(),
+      isGuest: false,
+    );
+  } catch (e) {
+    debugPrint('Error parsing UserModel: $e\nJSON: $json');
+    return UserModel(
+      id: 'error',
+      email: 'error@example.com',
+      username: 'Error User',
+      isGuest: true,
     );
   }
+}
 
   static DateTime? _parseDate(dynamic value) {
     if (value == null) return null;
@@ -172,7 +85,6 @@ class UserModel {
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        // DON'T include email here!
         'username': username,
         'avatar_url': avatarUrl,
         'is_online': isOnline,

@@ -7,10 +7,8 @@ class SupabaseConfig {
 
   static Future<void> initialize() async {
     try {
-      // Load environment variables from .env file
       await dotenv.load(fileName: ".env");
-      
-      // Get Supabase URL and Anon Key from environment variables
+
       final supabaseUrl = dotenv.env['SUPABASE_URL']?.trim();
       final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY']?.trim();
 
@@ -20,7 +18,7 @@ class SupabaseConfig {
       if (supabaseUrl == null || supabaseUrl.isEmpty) {
         throw Exception('Missing SUPABASE_URL in .env file');
       }
-      
+
       if (supabaseAnonKey == null || supabaseAnonKey.isEmpty) {
         throw Exception('Missing SUPABASE_ANON_KEY in .env file');
       }

@@ -47,12 +47,6 @@ class _SignupScreenState extends State<SignupScreen> {
       );
 
       if (success && mounted) {
-        if (await authProvider.signUp(_emailController.text.trim(), _passwordController.text, _usernameController.text.trim())) {
-  // Automatically goes to HomeScreen thanks to AuthWrapper
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Welcome!')),
-  );
-}
         context.go('/chats');
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -6,7 +6,6 @@ import 'package:chatapp/providers/chat_provider.dart';
 import 'package:chatapp/widgets/chat_bubble.dart';
 import 'package:chatapp/widgets/custom_appbar.dart';
 import 'package:chatapp/widgets/message_input.dart';
-import 'package:chatapp/widgets/typing_indicator.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final String chatId;
@@ -24,23 +23,32 @@ class ChatDetailScreen extends StatefulWidget {
 
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
+  late final ChatProvider _chatProvider;
+  bool _isInit = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final chatProvider = context.read<ChatProvider>();
-      chatProvider.loadMessages(widget.chatId);
-      chatProvider.subscribeToMessages(widget.chatId);
-      
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInit) {
+      _chatProvider = context.read<ChatProvider>();
+      _chatProvider.loadMessages(widget.chatId);
+      _chatProvider.subscribeToMessages(widget.chatId);
+
       final authProvider = context.read<AuthProvider>();
-      chatProvider.markAsRead(widget.chatId, authProvider.currentUser!.id);
-    });
+      _chatProvider.markAsRead(widget.chatId, authProvider.currentUser!.id);
+
+      _isInit = true;
+    }
   }
 
   @override
   void dispose() {
-    context.read<ChatProvider>().unsubscribeFromMessages();
+    _chatProvider.unsubscribeFromMessages();
     _scrollController.dispose();
     super.dispose();
   }
@@ -58,13 +66,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void _sendMessage(String content) {
     final authProvider = context.read<AuthProvider>();
     final chatProvider = context.read<ChatProvider>();
-    
+
     chatProvider.sendMessage(
       widget.chatId,
       authProvider.currentUser!.id,
       content,
+      context: context,
     );
-    
+
     Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
   }
 
@@ -155,13 +164,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
                 return ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  itemCount: chatProvider.currentMessages.length + (chatProvider.isTyping ? 1 : 0),
+                  padding: const EdgeInsets.symmetric(vertical: 16),                  itemCount: chatProvider.currentMessages.length,
                   itemBuilder: (context, index) {
-                    if (index == chatProvider.currentMessages.length) {
-                      return const TypingIndicator();
-                    }
-
                     final message = chatProvider.currentMessages[index];
                     final authProvider = context.read<AuthProvider>();
                     final isSent = message.senderId == authProvider.currentUser!.id;
@@ -177,7 +181,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           ),
           MessageInput(
             onSend: _sendMessage,
-            onTyping: () => context.read<ChatProvider>().setTyping(true),
           ),
         ],
       ),

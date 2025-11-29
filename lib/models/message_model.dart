@@ -35,17 +35,40 @@ class MessageModel {
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
+    DateTime parseTimestamp(dynamic timestamp) {
+      if (timestamp == null) return DateTime.now();
+      if (timestamp is Timestamp) return timestamp.toDate();
+      if (timestamp is String) return DateTime.parse(timestamp);
+      if (timestamp is DateTime) return timestamp;
+      return DateTime.now();
+    }
+
+    final userData = json['user'] != null
+        ? Map<String, dynamic>.from(json['user'] as Map)
+        : null;
+    final senderData = json['sender'] != null
+        ? Map<String, dynamic>.from(json['sender'] as Map)
+        : null;
+
+    final senderId = (json['sender_id'] as String?) ??
+                    (json['user_id'] as String?) ??
+                    (userData?['id'] as String?) ??
+                    (senderData?['id'] as String?) ??
+                    '';
+
+    final content = (json['content'] ?? '').toString();
+
+    final timestamp = parseTimestamp(json['timestamp'] ?? json['created_at']);
+
     return MessageModel(
-      id: json['id'] as String? ?? '',
-      chatId: json['chat_id'] as String? ?? '',
-      senderId: json['sender_id'] as String? ?? '',
-      sender: json['sender'] != null
-          ? UserModel.fromJson(Map<String, dynamic>.from(json['sender']))
-          : null,
-      content: json['content'] as String? ?? '',
-      timestamp: json['timestamp'] is Timestamp
-          ? (json['timestamp'] as Timestamp).toDate()
-          : DateTime.parse(json['timestamp'] as String),
+      id: (json['id'] ?? '').toString(),
+      chatId: (json['chat_id'] ?? '').toString(),
+      senderId: senderId,
+      sender: senderData != null
+          ? UserModel.fromJson(senderData)
+          : (userData != null ? UserModel.fromJson(userData) : null),
+      content: content,
+      timestamp: timestamp,
       isRead: json['is_read'] as bool? ?? false,
       status: json['status'] != null
           ? MessageStatus.values.firstWhere(

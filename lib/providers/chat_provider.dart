@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:chatapp/models/chat_model.dart';
 import 'package:chatapp/models/message_model.dart';
 import 'package:chatapp/models/user_model.dart';
@@ -16,9 +18,9 @@ class ChatProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _isLoadingMessages = false;
   bool _isSearching = false;
-  bool _isTyping = false;
   String? _errorMessage;
   StreamSubscription? _messageSubscription;
+  StreamSubscription? _chatsSubscription;
 
   List<ChatModel> get chats => _chats;
   List<MessageModel> get currentMessages => _currentMessages;
@@ -26,29 +28,47 @@ class ChatProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isLoadingMessages => _isLoadingMessages;
   bool get isSearching => _isSearching;
-  bool get isTyping => _isTyping;
   String? get errorMessage => _errorMessage;
+
+  void setupChatUpdates(String userId) {
+    _chatsSubscription?.cancel();
+    _chatsSubscription = _chatService.streamUserChats(userId).listen(
+      (chats) {
+        _chats = chats;
+        notifyListeners();
+      },
+      onError: (e) {
+        _errorMessage = 'Error receiving chat updates: $e';
+        debugPrint(_errorMessage);
+      },
+    );
+  }
 
   Future<void> loadChats(String userId, {bool useCache = true}) async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
       if (useCache) {
         _chats = await _cacheService.getCachedChats();
-        notifyListeners();
+        if (_chats.isNotEmpty) notifyListeners();
       }
 
       final chats = await _chatService.getChats(userId);
       _chats = chats;
       await _cacheService.cacheChats(chats);
-    } catch (e) {
-      _errorMessage = e.toString();
-      debugPrint('Load chats error: $e');
-    }
+      notifyListeners(); // Notify after getting fresh data
 
-    _isLoading = false;
-    notifyListeners();
+      // Set up real-time updates
+      setupChatUpdates(userId);
+    } catch (e) {
+      _errorMessage = 'Failed to load chats: ${e.toString()}';
+      debugPrint(_errorMessage);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> loadMessages(String chatId, {bool useCache = true}) async {
@@ -86,32 +106,61 @@ class ChatProvider extends ChangeNotifier {
     _messageSubscription = null;
   }
 
-  Future<void> sendMessage(String chatId, String senderId, String content) async {
+  Future<void> sendMessage(String chatId, String senderId, String content, {BuildContext? context}) async {
     try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Send the message
       final message = await _chatService.sendMessage(chatId, senderId, content);
+      
       if (message != null) {
         _currentMessages.add(message);
+        
+        // Update the chat's last message
+        await updateChatOnNewMessage(chatId, content, senderId);
+        
+        // Update the chat in the chats list if it exists
+        final chatIndex = _chats.indexWhere((c) => c.id == chatId);
+        if (chatIndex != -1) {
+          final updatedChat = _chats[chatIndex].copyWith(
+            lastMessage: message,
+            lastMessageTime: Timestamp.now(),
+          );
+          _chats[chatIndex] = updatedChat;
+          // Move to top of the list
+          final chat = _chats.removeAt(chatIndex);
+          _chats.insert(0, chat);
+        }
+        
         notifyListeners();
       }
     } catch (e) {
-      _errorMessage = e.toString();
-      debugPrint('Send message error: $e');
+      _errorMessage = 'Failed to send message: ${e.toString()}';
+      debugPrint('Send message error: $_errorMessage');
+      
+      // Show error to user if context is provided
+      if (context != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_errorMessage!)),
+        );
+      }
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
   Future<void> searchUsers(String query, String currentUserId) async {
-    if (query.isEmpty) {
-      _searchResults = [];
-      notifyListeners();
-      return;
-    }
-
     _isSearching = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
       _searchResults = await _chatService.searchUsers(query, currentUserId);
     } catch (e) {
+      _searchResults = [];
       _errorMessage = e.toString();
       debugPrint('Search users error: $e');
     }
@@ -122,11 +171,23 @@ class ChatProvider extends ChangeNotifier {
 
   Future<ChatModel?> createOrGetChat(String userId1, String userId2) async {
     try {
-      return await _chatService.createOrGetChat(userId1, userId2);
+      _isLoading = true;
+      notifyListeners();
+
+      final chat = await _chatService.createOrGetChat(userId1, userId2);
+
+      // Reload chats to ensure the new chat is included with all details
+      await loadChats(userId1, useCache: false);
+      
+      _errorMessage = null;
+      return chat;
     } catch (e) {
-      _errorMessage = e.toString();
-      debugPrint('Create chat error: $e');
+      _errorMessage = 'Failed to create chat: ${e.toString()}';
+      debugPrint(_errorMessage);
       return null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -136,11 +197,6 @@ class ChatProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Mark as read error: $e');
     }
-  }
-
-  void setTyping(bool typing) {
-    _isTyping = typing;
-    notifyListeners();
   }
 
   void clearError() {
@@ -153,9 +209,25 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Clear the current search results.
+  void clearSearchResults() {
+    _searchResults = [];
+    notifyListeners();
+  }
+
+  Future<void> updateChatOnNewMessage(String chatId, String message, String senderId) async {
+    try {
+      await _chatService.updateChatOnNewMessage(chatId, message, senderId);
+    } catch (e) {
+      _errorMessage = 'Failed to update chat: ${e.toString()}';
+      debugPrint(_errorMessage);
+    }
+  }
+
   @override
   void dispose() {
     _messageSubscription?.cancel();
+    _chatsSubscription?.cancel();
     super.dispose();
   }
 }
