@@ -4,10 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:chatapp/providers/auth_provider.dart';
 import 'package:chatapp/providers/chat_provider.dart';
-import 'package:chatapp/providers/theme_provider.dart';
 import 'package:chatapp/models/user_model.dart';
 import 'package:chatapp/widgets/user_avatar.dart';
-import 'package:chatapp/theme.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -26,7 +24,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = context.read<AuthProvider>();
       if (authProvider.currentUser != null) {
-        // The stream is now set up in loadChats
         context.read<ChatProvider>().loadChats(authProvider.currentUser!.id, useCache: true);
       }
     });
@@ -47,10 +44,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
     final chatProvider = context.read<ChatProvider>();
 
     if (_isSearching) {
-      // When search is enabled, populate suggestions (recent users)
       chatProvider.searchUsers('', authProvider.currentUser!.id);
     } else {
-      // When search is closed, clear search UI and results
       _searchController.clear();
       chatProvider.clearSearchResults();
     }
@@ -70,7 +65,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
       setState(() => _isSearching = false);
       _searchController.clear();
     } else {
-      // Provide user feedback if chat creation/fetch failed
       final msg = chatProvider.errorMessage ?? 'Unable to open chat. Please try again.';
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -84,28 +78,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: _isSearching
-            ? null
-            : PopupMenuButton(
-            icon: const Icon(Icons.menu),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                onTap: () {
-                  Future.delayed(Duration.zero, () async {
-                    await context.read<AuthProvider>().logout();
-                    if (mounted) context.go('/login');
-                  });
-                },
-                child: const Row(
-                  children: [
-                    Icon(Icons.logout, size: 20),
-                    SizedBox(width: 12),
-                    Text('Logout'),
-                  ],
-                ),
-              )
-            ]
-          ),
         title: _isSearching
             ? TextField(
                 controller: _searchController,
@@ -128,7 +100,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 },
               )
             : Text(
-                'ChatApp',
+                'messages',
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -139,19 +111,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
             icon: Icon(_isSearching ? Icons.close : Icons.search),
             onPressed: _toggleSearch,
           ),
-          Consumer<ThemeProvider>(
-            builder: (context, themeProvider, child) {
-              return IconButton(
-                icon: Icon(
-                  themeProvider.themeMode == ThemeMode.dark
-                      ? Icons.light_mode
-                      : Icons.dark_mode,
-                ),
-                onPressed: () => themeProvider.toggleTheme(),
-              );
-            },
-          ),
-          
+
+
         ],
       ),
       body: _isSearching ? _buildSearchResults() : _buildChatList(),
@@ -162,7 +123,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
               backgroundColor: Theme.of(context).colorScheme.primary,
               child: const Icon(Icons.person_add, color: Colors.white),
             ),
-      
+
     );
   }
 

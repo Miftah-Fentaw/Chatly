@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:chatapp/config/firebase_config.dart';
 import 'package:chatapp/models/chat_model.dart';
 import 'package:chatapp/models/message_model.dart';
@@ -48,7 +49,7 @@ class FirebaseChatService {
         return chats;
       });
     } catch (e) {
-      print('Error getting chats stream: $e');
+      debugPrint('Error getting chats stream: $e');
       rethrow;
     }
   }
@@ -71,7 +72,7 @@ class FirebaseChatService {
               .reversed
               .toList());
     } catch (e) {
-      print('Error getting messages stream: $e');
+      debugPrint('Error getting messages stream: $e');
       rethrow;
     }
   }
@@ -111,7 +112,7 @@ class FirebaseChatService {
 
       return message;
     } catch (e) {
-      print('Error sending message: $e');
+      debugPrint('Error sending message: $e');
       rethrow;
     }
   }
@@ -160,7 +161,7 @@ class FirebaseChatService {
         unreadCount: 0,
       );
     } catch (e) {
-      print('Error creating chat: $e');
+      debugPrint('Error creating chat: $e');
       rethrow;
     }
   }
@@ -175,7 +176,7 @@ class FirebaseChatService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error marking messages as read: $e');
+      debugPrint('Error marking messages as read: $e');
       rethrow;
     }
   }
@@ -211,7 +212,7 @@ class FirebaseChatService {
 
       return users.values.toList();
     } catch (e) {
-      print('Error searching users: $e');
+      debugPrint('Error searching users: $e');
       rethrow;
     }
   }
@@ -243,7 +244,7 @@ class FirebaseChatService {
         unreadCount: 0,
       );
     } catch (e) {
-      print('Error finding existing chat: $e');
+      debugPrint('Error finding existing chat: $e');
       return null;
     }
   }
@@ -263,7 +264,7 @@ class FirebaseChatService {
 
       return participants;
     } catch (e) {
-      print('Error getting participants: $e');
+      debugPrint('Error getting participants: $e');
       return [];
     }
   }

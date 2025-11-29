@@ -1,4 +1,6 @@
 // lib/app.dart
+import 'package:chatapp/screens/Home_Screen.dart';
+import 'package:chatapp/screens/Notifications_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -7,8 +9,8 @@ import 'package:chatapp/providers/theme_provider.dart';
 import 'package:chatapp/screens/login_screen.dart';
 import 'package:chatapp/screens/signup_screen.dart';
 import 'package:chatapp/screens/forgot_password_screen.dart';
-import 'package:chatapp/screens/chat_list_screen.dart';
 import 'package:chatapp/screens/chat_detail_screen.dart';
+import 'package:chatapp/screens/main_nav_screen.dart';
 import 'package:chatapp/models/user_model.dart';
 import 'package:chatapp/theme.dart';
 
@@ -24,13 +26,12 @@ class ChatApp extends StatelessWidget {
         // This rebuilds the entire router whenever currentUser changes
         final router = GoRouter(
           navigatorKey: rootNavigatorKey,
-          initialLocation: auth.currentUser != null ? '/chats' : '/login',
+          initialLocation: auth.currentUser != null ? '/home' : '/login',
           redirect: (context, state) {
             final loggedIn = auth.currentUser != null;
             final isAuthScreen = ['/login', '/signup', '/forgot-password']
                 .contains(state.matchedLocation);
-
-            if (loggedIn && isAuthScreen) return '/chats';
+            if (loggedIn && isAuthScreen) return '/home';
             if (!loggedIn && !isAuthScreen) return '/login';
             return null;
           },
@@ -53,7 +54,12 @@ class ChatApp extends StatelessWidget {
             GoRoute(
               path: '/chats',
               name: 'chats',
-              builder: (context, state) => const ChatListScreen(),
+              builder: (context, state) => const MainNavScreen(),
+            ),
+            GoRoute(
+              path: '/home',
+              name: 'home',
+              builder: (context, state) => const MainNavScreen(),
             ),
             GoRoute(
               path: '/chat/:chatId',
@@ -63,6 +69,21 @@ class ChatApp extends StatelessWidget {
                 final otherUser = state.extra as UserModel;
                 return ChatDetailScreen(chatId: chatId, otherUser: otherUser);
               },
+            ),
+            GoRoute(
+              path: '/notifications',
+              name: 'notifications',
+              builder: (context, state) => const MainNavScreen(),
+            ),
+            GoRoute(
+              path: '/settings',
+              name: 'settings',
+              builder: (context, state) => const MainNavScreen(),
+            ),
+            GoRoute(
+              path: '/post',
+              name: 'post',
+              builder: (context, state) => const MainNavScreen(),
             ),
           ],
         );

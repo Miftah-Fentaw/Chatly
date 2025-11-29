@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:chatapp/theme.dart';
-
+// Removed unused theme import to reduce analyzer warnings
 class MessageInput extends StatefulWidget {
   final Function(String) onSend;
   final VoidCallback? onTyping;

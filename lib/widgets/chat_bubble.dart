@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:chatapp/models/message_model.dart';
 import 'package:chatapp/widgets/user_avatar.dart';
-import 'package:chatapp/theme.dart';
+// theme import removed (unused here) to reduce analyzer warnings
 
 class ChatBubble extends StatelessWidget {
   final MessageModel message;
