@@ -3,7 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider extends ChangeNotifier {
   static const String _themeKey = 'theme_mode';
-  ThemeMode _themeMode = ThemeMode.system;
+  // Default to light theme on first run
+  ThemeMode _themeMode = ThemeMode.light;
 
   ThemeMode get themeMode => _themeMode;
 
@@ -15,7 +16,7 @@ class ThemeProvider extends ChangeNotifier {
 
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
-    final themeModeString = prefs.getString(_themeKey) ?? 'system';
+    final themeModeString = prefs.getString(_themeKey) ?? 'light';
     _themeMode = ThemeMode.values.firstWhere(
       (mode) => mode.toString() == 'ThemeMode.$themeModeString',
       orElse: () => ThemeMode.system,

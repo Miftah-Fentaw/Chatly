@@ -19,7 +19,7 @@ class AuthWrapper extends StatelessWidget {
       );
     }
 
-    if (!authProvider.isAuthenticated && !authProvider.isGuest) {
+    if (!authProvider.isAuthenticated) {
       return const LoginScreen();
     }
 

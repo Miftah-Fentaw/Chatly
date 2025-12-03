@@ -40,11 +40,13 @@ class AppRadius {
   static const double xl = 24.0;
 }
 
-// =============================================================================
-// TEXT STYLE EXTENSIONS
-// =============================================================================
 
-/// Extension to add text style utilities to BuildContext
+
+
+
+
+//TEXT STYLE
+
 /// Access via context.textStyles
 extension TextStyleContext on BuildContext {
   TextTheme get textStyles => Theme.of(this).textTheme;
@@ -74,9 +76,13 @@ extension TextStyleExtensions on TextStyle {
   TextStyle withSize(double size) => copyWith(fontSize: size);
 }
 
-// =============================================================================
-// COLORS
-// =============================================================================
+
+
+
+
+
+//COLORS
+
 
 /// Chat-focused color palette for light mode
 class LightModeColors {
@@ -176,9 +182,10 @@ class FontSizes {
   static const double bodySmall = 12.0;
 }
 
-// =============================================================================
-// THEMES
-// =============================================================================
+
+
+
+//THEMES
 
 /// Light theme with modern, neutral aesthetic
 ThemeData get lightTheme => ThemeData(

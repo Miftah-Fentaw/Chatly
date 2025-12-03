@@ -5,6 +5,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class SupabaseConfig {
   static SupabaseClient? _client;
 
+
+  
+
   static Future<void> initialize() async {
     try {
       await dotenv.load(fileName: ".env");
@@ -43,4 +46,8 @@ class SupabaseConfig {
   }
 
   static bool get isInitialized => _client != null;
+
+
+
+  
 }

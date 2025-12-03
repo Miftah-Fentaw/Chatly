@@ -16,7 +16,7 @@ class ChatService {
 
           final response = await _client
             .from('chats')
-            .select('*, participants:users!chat_participants(*)')
+            .select('*, participants:chat_participants(user_id:users(*))')
             .contains('participant_ids', [userId])
             .order('last_message_time', ascending: false);
 
@@ -147,7 +147,7 @@ class ChatService {
 
     final response = await _client
       .from('chats')
-      .select('*, participants:users!chat_participants(*)')
+      .select('*, participants:chat_participants(user_id:users(*))')
       .contains('participant_ids', participants)
       .limit(1);
 
@@ -164,7 +164,7 @@ class ChatService {
     final createdChat = await _client
       .from('chats')
       .insert(newChat)
-      .select('*, participants:users!chat_participants(*)')
+      .select('*, participants:chat_participants(user_id:users(*))')
       .single();
 
     return ChatModel.fromJson(createdChat);

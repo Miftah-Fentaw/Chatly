@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:chatapp/providers/notifications_provider.dart';
+import 'package:chatapp/providers/post_provider.dart';
+import 'package:chatapp/services/notifications_service.dart';
 import 'package:flutter/material.dart';
 import 'package:chatapp/app.dart';
 import 'package:chatapp/config/supabase_client.dart';
@@ -17,6 +20,12 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => PostProvider()),
+        ChangeNotifierProvider(
+          create: (_) => NotificationProvider(
+            service: NotificationService(supabase: SupabaseConfig.client),
+          ),
+        )
       ],
       child: const ChatApp(),
     ),

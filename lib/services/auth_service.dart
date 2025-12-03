@@ -1,72 +1,15 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:chatapp/config/supabase_client.dart';
 import 'package:chatapp/models/user_model.dart';
 
 class AuthService {
   SupabaseClient get _client => SupabaseConfig.client;
-  static const String _guestKey = 'guest_user';
+  static const String _cachedUserKey = 'cached_current_user';
 
-  Future<UserModel> loginAsGuest({String? username}) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final now = DateTime.now();
-      final user = UserModel(
-        id: 'guest-${now.millisecondsSinceEpoch}',
-        email: 'guest@local',
-        username: (username == null || username.trim().isEmpty)
-            ? 'Guest ${now.millisecondsSinceEpoch % 1000}'
-            : username.trim(),
-        lastSeen: now,
-        createdAt: now,
-        isOnline: true,
-      );
-
-      await prefs.setString(
-        _guestKey,
-        jsonEncode(user.toJson()),
-      );
-      debugPrint('✅ Guest session created for ${user.username}');
-      return user;
-    } catch (e) {
-      debugPrint('❌ Guest login error: $e');
-      rethrow;
-    }
-  }
-
-  Future<UserModel?> _getStoredGuest() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_guestKey);
-      if (raw == null) return null;
-      final data = jsonDecode(raw);
-      if (data is! Map<String, dynamic>) return null;
-      if (!data.containsKey('id') || !data.containsKey('username')) {
-        await prefs.remove(_guestKey);
-        return null;
-      }
-      return UserModel.fromJson(Map<String, dynamic>.from(data));
-    } catch (e) {
-      debugPrint('❌ Failed to read guest session: $e');
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.remove(_guestKey);
-      } catch (_) {}
-      return null;
-    }
-  }
-
-  Future<void> _clearGuest() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_guestKey);
-      debugPrint('✅ Guest session cleared');
-    } catch (e) {
-      debugPrint('❌ Failed to clear guest session: $e');
-    }
-  }
 
   Future<UserModel?> signUp(String email, String password, String username) async {
     try {
@@ -95,6 +38,10 @@ class AuthService {
 
       await _client.from('profiles').insert(user.toJson());
       debugPrint('✅ User signed up: ${user.email}');
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_cachedUserKey, jsonEncode(user.toJson()));
+      } catch (_) {}
       return user;
     } catch (e) {
       debugPrint('❌ Sign up error: $e');
@@ -126,6 +73,10 @@ class AuthService {
 
       final user = UserModel.fromJson(userData);
       debugPrint('✅ User logged in: ${user.email}');
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_cachedUserKey, jsonEncode(user.toJson()));
+      } catch (_) {}
       return user;
     } catch (e) {
       debugPrint('❌ Login error: $e');
@@ -135,8 +86,6 @@ class AuthService {
 
   Future<void> logout() async {
     try {
-      await _clearGuest();
-
       if (SupabaseConfig.isInitialized) {
         final userId = _client.auth.currentUser?.id;
         if (userId != null) {
@@ -144,6 +93,10 @@ class AuthService {
         }
         await _client.auth.signOut();
         debugPrint('✅ User logged out');
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove(_cachedUserKey);
+        } catch (_) {}
       }
     } catch (e) {
       debugPrint('❌ Logout error: $e');
@@ -169,20 +122,32 @@ class AuthService {
     try {
       if (SupabaseConfig.isInitialized) {
         final user = _client.auth.currentUser;
-        if (user == null) {
-          return await _getStoredGuest();
+        if (user != null) {
+          try {
+            final userData = await _client
+                .from('profiles')
+                .select()
+                .eq('id', user.id)
+                .single();
+            return UserModel.fromJson(userData);
+          } catch (e) {
+            debugPrint('❌ Failed fetching profile, falling back to cache: $e');
+          }
         }
-
-        final userData = await _client
-            .from('profiles')
-            .select()
-            .eq('id', user.id)
-            .single();
-
-        return UserModel.fromJson(userData);
-      } else {
-        return await _getStoredGuest();
       }
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cached = prefs.getString(_cachedUserKey);
+        if (cached != null && cached.isNotEmpty) {
+          final Map<String, dynamic> json = jsonDecode(cached);
+          return UserModel.fromJson(json);
+        }
+      } catch (e) {
+        debugPrint('❌ Failed reading cached user: $e');
+      }
+
+      return null;
     } catch (e) {
       debugPrint('❌ Get current user error: $e');
       return null;

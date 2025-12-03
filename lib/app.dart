@@ -1,6 +1,3 @@
-// lib/app.dart
-import 'package:chatapp/screens/Home_Screen.dart';
-import 'package:chatapp/screens/Notifications_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +6,7 @@ import 'package:chatapp/providers/theme_provider.dart';
 import 'package:chatapp/screens/login_screen.dart';
 import 'package:chatapp/screens/signup_screen.dart';
 import 'package:chatapp/screens/forgot_password_screen.dart';
+import 'package:chatapp/screens/reset_sent_screen.dart';
 import 'package:chatapp/screens/chat_detail_screen.dart';
 import 'package:chatapp/screens/main_nav_screen.dart';
 import 'package:chatapp/models/user_model.dart';
@@ -23,6 +21,20 @@ class ChatApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, auth, child) {
+        // While auth status is being determined, IT show a splash/loading screen
+        if (auth.isLoading) {
+          return MaterialApp(
+            title: 'ChatApp',
+            debugShowCheckedModeBanner: false,
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            themeMode: context.watch<ThemeProvider>().themeMode,
+            home: const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
         // This rebuilds the entire router whenever currentUser changes
         final router = GoRouter(
           navigatorKey: rootNavigatorKey,
@@ -52,14 +64,21 @@ class ChatApp extends StatelessWidget {
               builder: (context, state) => const ForgotPasswordScreen(),
             ),
             GoRoute(
+              path: '/reset-sent',
+              name: 'reset-sent',
+              builder: (context, state) {
+                return const ResetSentScreen();
+              },
+            ),
+            GoRoute(
               path: '/chats',
               name: 'chats',
-              builder: (context, state) => const MainNavScreen(),
+              builder: (context, state) => MainNavScreen(),
             ),
             GoRoute(
               path: '/home',
               name: 'home',
-              builder: (context, state) => const MainNavScreen(),
+              builder: (context, state) => MainNavScreen(initialIndex: 0),
             ),
             GoRoute(
               path: '/chat/:chatId',
@@ -73,17 +92,17 @@ class ChatApp extends StatelessWidget {
             GoRoute(
               path: '/notifications',
               name: 'notifications',
-              builder: (context, state) => const MainNavScreen(),
+              builder: (context, state) => MainNavScreen(),
             ),
             GoRoute(
               path: '/settings',
               name: 'settings',
-              builder: (context, state) => const MainNavScreen(),
+              builder: (context, state) => MainNavScreen(),
             ),
             GoRoute(
               path: '/post',
               name: 'post',
-              builder: (context, state) => const MainNavScreen(),
+              builder: (context, state) => MainNavScreen(initialIndex: 2),
             ),
           ],
         );

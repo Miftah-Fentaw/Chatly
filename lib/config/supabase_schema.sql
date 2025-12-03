@@ -1,7 +1,4 @@
-/*
-THE INITIAL SUPABASE SCHEMA FOR AND ALSO BUSNESS RULE BEFORE ANY UPDATE AND ALTERATION
-*/
-
+-- THE INITIAL SUPABASE SCHEMA FOR AND ALSO BUSNESS RULE BEFORE ANY MODIFICATIONS AND ALTERATION
 
 
 -- Enable Row Level Security
@@ -57,12 +54,12 @@ CREATE INDEX IF NOT EXISTS idx_messages_created_at ON public.messages(created_at
 CREATE INDEX IF NOT EXISTS idx_chat_participants_user_id ON public.chat_participants(user_id);
 
 -- RLS Policies for profiles
-CREATE POLICY "Users can view all profiles" 
-  ON public.profiles FOR SELECT 
+CREATE POLICY "Users can view all profiles"
+  ON public.profiles FOR SELECT
   USING (true);
 
-CREATE POLICY "Users can update their own profile" 
-  ON public.profiles FOR UPDATE 
+CREATE POLICY "Users can update their own profile"
+  ON public.profiles FOR UPDATE
   USING (auth.uid() = id);
 
 -- RLS Policies for chats
@@ -121,7 +118,7 @@ CREATE OR REPLACE FUNCTION update_chat_last_message()
 RETURNS TRIGGER AS $$
 BEGIN
   UPDATE public.chats
-  SET 
+  SET
     last_message = NEW.content,
     last_message_sent_at = NEW.created_at,
     last_message_sent_by = NEW.user_id,

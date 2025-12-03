@@ -26,15 +26,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (_formKey.currentState!.validate()) {
       final authProvider = context.read<AuthProvider>();
       final success = await authProvider.resetPassword(_emailController.text.trim());
-
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Password reset email sent! Check your inbox.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        context.pop();
+        context.push('/reset-sent', extra: _emailController.text.trim());
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
