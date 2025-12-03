@@ -14,8 +14,7 @@ class NotificationService {
         .select()
         .order('created_at', ascending: false);
 
-    // response is now a List<dynamic>
-    if (response == null) {
+    if (response.isEmpty) {
       return [];
     }
 
