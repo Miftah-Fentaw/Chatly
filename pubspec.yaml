@@ -32,11 +32,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/chatly.png
+    - assets/logo.png
     - .env
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: assets/chatly.png
+  image_path: assets/logo.png
   remove_alpha_ios: true
