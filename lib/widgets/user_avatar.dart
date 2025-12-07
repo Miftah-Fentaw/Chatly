@@ -22,7 +22,7 @@ class UserAvatar extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: radius,
-          backgroundImage: NetworkImage(avatarUrl),
+          backgroundImage: AssetImage(avatarUrl),
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         ),
         if (showOnlineStatus && user?.isOnline == true)

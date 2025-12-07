@@ -48,10 +48,13 @@ class ChatModel {
       List<UserModel> parseParticipants(dynamic data) {
         if (data == null) return [];
         if (data is List) {
-          return data
-              .whereType<Map<String, dynamic>>()
-              .map((e) => UserModel.fromJson(e))
-              .toList();
+          return data.whereType<Map<String, dynamic>>().map((e) {
+            // Handle nested user object from Supabase (e.g. {user_id: {...}})
+            if (e.containsKey('user_id') && e['user_id'] is Map) {
+              return UserModel.fromJson(e['user_id'] as Map<String, dynamic>);
+            }
+            return UserModel.fromJson(e);
+          }).toList();
         }
         return [];
       }
@@ -71,13 +74,17 @@ class ChatModel {
         if (data is String) {
           try {
             final ts = parseTimestamp(
-              json['last_message_time'] ?? json['updated_at'] ?? json['lastMessageTime'],
+              json['last_message_time'] ??
+                  json['updated_at'] ??
+                  json['lastMessageTime'],
             );
 
             return MessageModel(
               id: '',
               chatId: (json['id'] ?? '').toString(),
-              senderId: (json['last_message_sender_id'] ?? json['lastMessageSenderId'] ?? '') as String,
+              senderId: (json['last_message_sender_id'] ??
+                  json['lastMessageSenderId'] ??
+                  '') as String,
               content: data,
               timestamp: ts?.toDate() ?? DateTime.now(),
             );
@@ -92,15 +99,15 @@ class ChatModel {
 
       return ChatModel(
         id: (json['id'] ?? '').toString(),
-        participantIds: parseParticipantIds(json['participant_ids'] ?? json['participantIds']),
+        participantIds: parseParticipantIds(
+            json['participant_ids'] ?? json['participantIds']),
         participants: parseParticipants(json['participants']),
-        lastMessage: parseLastMessage(json['last_message'] ?? json['lastMessage']),
-        lastMessageTime: parseTimestamp(
-          json['last_message_time'] ??
-          json['lastMessageTime'] ??
-          json['updated_at'] ??
-          json['lastMessageSentAt']
-        ),
+        lastMessage:
+            parseLastMessage(json['last_message'] ?? json['lastMessage']),
+        lastMessageTime: parseTimestamp(json['last_message_time'] ??
+            json['lastMessageTime'] ??
+            json['updated_at'] ??
+            json['lastMessageSentAt']),
         unreadCount: (json['unread_count'] ?? json['unreadCount'] ?? 0) as int,
       );
     } catch (e) {

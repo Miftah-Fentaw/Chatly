@@ -4,5 +4,5 @@ class AppConstants {
   static const int chatsPerPage = 20;
   static const Duration typingIndicatorTimeout = Duration(seconds: 3);
   static const Duration cacheExpiration = Duration(hours: 24);
-  static const String defaultAvatarUrl = 'https://www.flaticon.com/free-icons/contact';
+  static const String defaultAvatarUrl = 'assets/user.png';
 }

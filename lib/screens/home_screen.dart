@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:chatapp/utils/constants.dart';
 
 import 'package:chatapp/providers/post_provider.dart';
 import 'package:flutter/material.dart';
@@ -132,12 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           CircleAvatar(
                                             radius: 18,
                                             backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-                                            child: Text(
-                                              (post.username.split(' ').first.isNotEmpty
-                                                      ? post.username.split(' ').first[0].toUpperCase()
-                                                      : '?'),
-                                              style: TextStyle(color: Theme.of(context).colorScheme.primary),
-                                            ),
+                                            child: Image.asset(AppConstants.defaultAvatarUrl)
                                           ),
                                           const SizedBox(width: 8),
                                           Text(

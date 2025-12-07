@@ -238,7 +238,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 orElse: () => UserModel(
                   id: '',
                   email: '',
-                  username: '',
+                  username: 'Unknown',
                   lastSeen: DateTime.now(),
                   createdAt: DateTime.now(),
                 ),
