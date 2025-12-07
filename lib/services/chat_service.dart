@@ -24,7 +24,6 @@ class ChatService {
       final chats =
           (response as List).map((json) => ChatModel.fromJson(json)).toList();
 
-      // Fallback: If participants are empty (likely due to missing join table), fetch users manually
       for (var chat in chats) {
         if (chat.participants.isEmpty && chat.participantIds.isNotEmpty) {
           try {
@@ -37,13 +36,6 @@ class ChatService {
                 .map((json) => UserModel.fromJson(json))
                 .toList();
 
-            // Update the chat with fetched participants
-            // Since ChatModel fields are final, we likely need to check if we can modify it
-            // or if we rely on the fact that we are returning a new list.
-            // Actually ChatModel has a participants field which is final.
-            // We need to replace the ChatModel instance in the list.
-            // But valid iteration modification is tricky.
-            // Let's create a new list.
           } catch (e) {
             debugPrint('Error fetching fallback participants: $e');
           }
