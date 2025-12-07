@@ -350,3 +350,36 @@ TextTheme _buildTextTheme(Brightness brightness) {
     ),
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            //  () async {
+            //   final auth = context.read<AuthProvider>();
+            //   if (!auth.isAuthenticated) {
+            //     ScaffoldMessenger.of(context).showSnackBar(
+            //       const SnackBar(content: Text('Please sign in to react')),
+            //     );
+            //     return;
+            //   }
+
+            //   await postProvider.reactToPost(post.id, r["icon"] as String);
+            // },

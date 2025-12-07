@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/post_model.dart';
 
@@ -30,7 +31,24 @@ class PostService {
 
   Future<void> updateReaction(String postId, String reactionType, int increment) async {
     final current = await _client.from('posts').select(reactionType).eq('id', postId).single();
-    final newValue = (current[reactionType] as int) + increment;
+
+    int currentValue = 0;
+    try {
+      final raw = current[reactionType];
+      if (raw is int) {
+        currentValue = raw;
+      } else if (raw is String) {
+        currentValue = int.tryParse(raw) ?? 0;
+      } else if (raw == null) {
+        currentValue = 0;
+      } else {
+        currentValue = int.tryParse(raw.toString()) ?? 0;
+      }
+    } catch (_) {
+      currentValue = 0;
+    }
+
+    final newValue = math.max(0, currentValue + increment);
 
     await _client.from('posts').update({reactionType: newValue}).eq('id', postId);
   }

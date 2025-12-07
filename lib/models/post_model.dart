@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 class Post {
   final String id;
   final DateTime createdAt;
@@ -20,15 +22,26 @@ class Post {
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
+    int parseNonNeg(dynamic v) {
+      try {
+        if (v is int) return math.max(0, v);
+        if (v is String) return math.max(0, int.tryParse(v) ?? 0);
+        if (v == null) return 0;
+        return math.max(0, int.tryParse(v.toString()) ?? 0);
+      } catch (_) {
+        return 0;
+      }
+    }
+
     return Post(
       id: json['id'],
       createdAt: DateTime.parse(json['created_at']),
       userId: json['user_id'],
       username: json['username'],
       content: json['content'],
-      likes: json['likes'],
-      dislikes: json['dislikes'],
-      angry: json['angry'],
+      likes: parseNonNeg(json['likes']),
+      dislikes: parseNonNeg(json['dislikes']),
+      angry: parseNonNeg(json['angry']),
     );
   }
 

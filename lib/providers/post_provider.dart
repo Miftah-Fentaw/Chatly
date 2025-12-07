@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 
@@ -44,7 +45,9 @@ class PostProvider extends ChangeNotifier {
     try {
       final cached = await _cacheService.getCachedPosts();
       if (cached.isNotEmpty) {
-        final cachedModels = cached.map((e) => Post.fromJson(e as Map<String, dynamic>)).toList();
+        final cachedModels = cached
+            .map((e) => Post.fromJson(e as Map<String, dynamic>))
+            .toList();
         _setFromModelList(cachedModels);
       }
     } catch (_) {}
@@ -55,8 +58,7 @@ class PostProvider extends ChangeNotifier {
       try {
         await _cacheService.cachePosts(fetched);
       } catch (_) {}
-    } catch (_) {
-    }
+    } catch (_) {}
 
     try {
       _sub = _service.getPostsStream().listen((modelList) {
@@ -65,8 +67,7 @@ class PostProvider extends ChangeNotifier {
           _cacheService.cachePosts(modelList);
         } catch (_) {}
       });
-    } catch (_) {
-    }
+    } catch (_) {}
   }
 
   void _setFromModelList(List<Post> modelList) {
@@ -85,9 +86,9 @@ class PostProvider extends ChangeNotifier {
           content: m.content,
           timestamp: m.createdAt,
           reactions: {
-            '👍': m.likes,
-            '👎': m.dislikes,
-            '😡': m.angry,
+            'likes': math.max(0, m.likes),
+            'dislikes': math.max(0, m.dislikes),
+            'angry': math.max(0, m.angry),
           },
           currentUserReaction: currentUserReaction,
         );
@@ -110,53 +111,88 @@ class PostProvider extends ChangeNotifier {
       try {
         await _cacheService.cachePosts(list);
       } catch (_) {}
-    } catch (_) {
-    }
+    } catch (_) {}
   }
 
-  Future<void> reactToPost(String postId, String reactionEmoji) async {
-    final mapping = {'👍': 'likes', '👎': 'dislikes', '😡': 'angry'};
-    final column = mapping[reactionEmoji];
-    if (column == null) return;
+  Future<void> reactToPost(String postId, String reactionIcon) async {
+    final iconToReactionType = {
+      "assets/icons/like.png": "likes",
+      "assets/icons/dislike.png": "dislikes",
+      "assets/icons/angry.png": "angry",
+    };
+
+    final reactionType = iconToReactionType[reactionIcon];
+    if (reactionType == null) return;
+
     final userId = _service.client.auth.currentUser?.id;
     if (userId == null) return;
 
-    final current = _userReactions[postId]?[userId];
-    if (current == reactionEmoji) {
-      _userReactions[postId] ??= {};
-      _userReactions[postId]!.remove(userId);
-      final idx = _posts.indexWhere((p) => p.id == postId);
-      if (idx != -1) {
-        _posts[idx].reactions[reactionEmoji] = (_posts[idx].reactions[reactionEmoji] ?? 1) - 1;
-      }
+    final postIndex = _posts.indexWhere((p) => p.id == postId);
+    if (postIndex == -1) return;
+
+    final post = _posts[postIndex];
+
+    // Current user's reaction type for this post (e.g. 'likes')
+    final currentReactionType = post.currentUserReaction;
+
+    final newReactions = Map<String, int>.from(post.reactions);
+
+    // If tapping the same reaction -> retract
+    if (currentReactionType == reactionType) {
+      newReactions[reactionType] = (newReactions[reactionType] ?? 0) - 1;
+      if (newReactions[reactionType]! < 0) newReactions[reactionType] = 0;
+
+      _userReactions[postId]?.remove(userId);
+
+      _posts[postIndex] = PostItem(
+        id: post.id,
+        userId: post.userId,
+        username: post.username,
+        content: post.content,
+        timestamp: post.timestamp,
+        reactions: newReactions,
+        currentUserReaction: null,
+      );
+
       notifyListeners();
+
       try {
-        await _service.updateReaction(postId, column, -1);
+        await _service.updateReaction(postId, reactionType, -1);
       } catch (_) {}
       return;
     }
 
-    if (current != null) {
-      final prevCol = mapping[current];
-      if (prevCol != null) {
-        final idx = _posts.indexWhere((p) => p.id == postId);
-        if (idx != -1) {
-          _posts[idx].reactions[current] = (_posts[idx].reactions[current] ?? 1) - 1;
-        }
-        try {
-          await _service.updateReaction(postId, prevCol, -1);
-        } catch (_) {}
-      }
+    // If switching from another reaction -> decrement previous
+    if (currentReactionType != null && currentReactionType != reactionType) {
+      final prevType = currentReactionType;
+      newReactions[prevType] = (newReactions[prevType] ?? 0) - 1;
+      if (newReactions[prevType]! < 0) newReactions[prevType] = 0;
+
+      try {
+        await _service.updateReaction(postId, prevType, -1);
+      } catch (_) {}
     }
+
+    // Add new reaction
+    newReactions[reactionType] = (newReactions[reactionType] ?? 0) + 1;
+
     _userReactions[postId] ??= {};
-    _userReactions[postId]![userId] = reactionEmoji;
-    final idx = _posts.indexWhere((p) => p.id == postId);
-    if (idx != -1) {
-      _posts[idx].reactions[reactionEmoji] = (_posts[idx].reactions[reactionEmoji] ?? 0) + 1;
-    }
+    _userReactions[postId]![userId] = reactionType;
+
+    _posts[postIndex] = PostItem(
+      id: post.id,
+      userId: post.userId,
+      username: post.username,
+      content: post.content,
+      timestamp: post.timestamp,
+      reactions: newReactions,
+      currentUserReaction: reactionType,
+    );
+
     notifyListeners();
+
     try {
-      await _service.updateReaction(postId, column, 1);
+      await _service.updateReaction(postId, reactionType, 1);
     } catch (_) {}
   }
 
@@ -166,6 +202,3 @@ class PostProvider extends ChangeNotifier {
     super.dispose();
   }
 }
-
-
-
