@@ -22,6 +22,7 @@ dependencies:
   intl: 0.20.2
   flutter_dotenv: ^6.0.0
   flutter_snake_navigationbar: 
+  flutter_reaction_button: ^3.0.0+3
 
 dev_dependencies:
   flutter_test:
@@ -35,6 +36,7 @@ flutter:
     - assets/logo.png
     - .env
     - assets/user.png
+    - assets/icons/
 
 flutter_launcher_icons:
   android: true
