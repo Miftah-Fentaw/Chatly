@@ -1,12 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:chatapp/models/user_model.dart';
 import 'package:chatapp/services/auth_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
-  
+
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
@@ -22,13 +23,13 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> _checkAuthStatus() async {
     _setLoading(true);
-    
+
     try {
       _currentUser = await _authService.getCurrentUser();
     } catch (e) {
       debugPrint('Auth check error: $e');
     }
-    
+
     _setLoading(false);
     notifyListeners();
   }
@@ -36,13 +37,14 @@ class AuthProvider with ChangeNotifier {
   Future<bool> signUp(String email, String password, String username) async {
     _setLoading(true);
     _clearError();
-    // Quick network check to avoid showing raw errors to users
+
     if (!await _hasNetwork()) {
       _errorMessage = 'No internet connection';
       _setLoading(false);
       notifyListeners();
       return false;
     }
+
     try {
       _currentUser = await _authService.signUp(email, password, username);
       _setLoading(false);
@@ -88,7 +90,6 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<bool> loginAsGuest({String? username}) async {
-    // Guest login removed. Do not allow guest sessions.
     _errorMessage = 'Guest sessions are disabled. Please sign up or log in.';
     notifyListeners();
     return false;
@@ -129,8 +130,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  /// Lightweight network presence check using DNS lookup. Fast and avoids adding
-  /// an external connectivity dependency. Returns true when network is reachable.
   Future<bool> _hasNetwork() async {
     try {
       final result = await InternetAddress.lookup('example.com');
@@ -155,22 +154,30 @@ class AuthProvider with ChangeNotifier {
   }
 
   String _formatError(dynamic error) {
-    if (error is String) return error;
-    if (error is Error) return error.toString();
-    if (error is SocketException) return 'No internet connection';
-    if (error is Exception) {
-      final msg = error.toString();
-      if (msg.contains('Invalid login credentials')) {
-        return 'Wrong email or password';
-      }
-      if (msg.contains('Email not confirmed')) {
-        return 'Please check your email and confirm your account';
-      }
-      if (msg.contains('network')) {
-        return 'No internet connection';
-      }
-      return msg.replaceFirst('Exception: ', '').split('\n').first;
+    debugPrint('Auth Error: $error');
+    if (error is AuthException) {
+      // Supabase specific auth error
+      return error.message;
     }
-    return 'An unexpected error occurred';
+    if (error is String) return error;
+    if (error is SocketException) return 'No internet connection';
+
+    final msg = error.toString();
+    if (msg.contains('Invalid login credentials')) {
+      return 'Wrong email or password';
+    }
+    if (msg.contains('Email not confirmed')) {
+      return 'Please check your email and confirm your account';
+    }
+    if (msg.contains('network') || msg.contains('SocketException')) {
+      return 'No internet connection';
+    }
+
+    // Clean up generic exception prefix
+    if (msg.startsWith('Exception: ')) {
+      return msg.replaceFirst('Exception: ', '');
+    }
+
+    return msg;
   }
 }
