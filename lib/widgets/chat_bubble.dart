@@ -15,19 +15,29 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bubbleColor = isSent
-        ? (isDark ? const Color(0xFF056162) : const Color(0xFFDCF8C6))
-        : (isDark ? const Color(0xFF1E2C33) : Colors.white);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    // Sent messages: Primary color (vivid blue) with white text
+    // Received messages: Surface variant/Container (light grey/dark grey) with onSurface text
+    final bubbleColor =
+        isSent ? colorScheme.primary : colorScheme.surfaceContainerHighest;
+
+    final textColor = isSent ? colorScheme.onPrimary : colorScheme.onSurface;
+
+    final timeColor = isSent
+        ? colorScheme.onPrimary.withOpacity(0.7)
+        : colorScheme.onSurfaceVariant;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: Row(
-        mainAxisAlignment: isSent ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isSent ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isSent) ...[
-            UserAvatar(user: message.sender, radius: 16),
+            UserAvatar(user: message.sender, radius: 14),
             const SizedBox(width: 8),
           ],
           Flexible(
@@ -36,28 +46,20 @@ class ChatBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 color: bubbleColor,
                 borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(18),
-                  topRight: const Radius.circular(18),
-                  bottomLeft: Radius.circular(isSent ? 18 : 4),
-                  bottomRight: Radius.circular(isSent ? 4 : 18),
+                  topLeft: const Radius.circular(20),
+                  topRight: const Radius.circular(20),
+                  bottomLeft: Radius.circular(isSent ? 20 : 4),
+                  bottomRight: Radius.circular(isSent ? 4 : 20),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     message.content,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: isSent && !isDark
-                          ? const Color(0xFF1A1A1A)
-                          : Theme.of(context).colorScheme.onSurface,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: textColor,
+                      height: 1.3,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -66,11 +68,9 @@ class ChatBubble extends StatelessWidget {
                     children: [
                       Text(
                         DateFormat('HH:mm').format(message.timestamp),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        style: theme.textTheme.labelSmall?.copyWith(
                           fontSize: 10,
-                          color: (isSent && !isDark
-                              ? const Color(0xFF1A1A1A)
-                              : Theme.of(context).colorScheme.onSurfaceVariant).withValues(alpha: 0.7),
+                          color: timeColor,
                         ),
                       ),
                       if (isSent) ...[
@@ -78,7 +78,7 @@ class ChatBubble extends StatelessWidget {
                         Icon(
                           message.isRead ? Icons.done_all : Icons.done,
                           size: 14,
-                          color: message.isRead ? Colors.blue : Colors.grey,
+                          color: message.isRead ? Colors.white : Colors.white70,
                         ),
                       ],
                     ],

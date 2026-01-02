@@ -17,26 +17,46 @@ class UserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final avatarUrl = user?.avatarUrl ?? AppConstants.defaultAvatarUrl;
-    
+    final theme = Theme.of(context);
+    final size = radius * 2;
+
     return Stack(
       children: [
-        CircleAvatar(
-          radius: radius,
-          backgroundImage: AssetImage(avatarUrl),
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(radius * 0.8), // Squircle-ish
+            border: Border.all(
+              color: theme.colorScheme.outline.withOpacity(0.1),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+            image: DecorationImage(
+              image: AssetImage(avatarUrl),
+              fit: BoxFit.cover,
+            ),
+          ),
         ),
         if (showOnlineStatus && user?.isOnline == true)
           Positioned(
-            right: 0,
-            bottom: 0,
+            right: -1,
+            bottom: -1,
             child: Container(
-              width: radius * 0.4,
-              height: radius * 0.4,
+              width: size * 0.3,
+              height: size * 0.3,
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: const Color(0xFF4CAF50), // Vibrant Green
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Theme.of(context).scaffoldBackgroundColor,
+                  color: theme.scaffoldBackgroundColor,
                   width: 2,
                 ),
               ),
