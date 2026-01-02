@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppSpacing {
-  // Spacing values
   static const double xs = 4.0;
   static const double sm = 8.0;
   static const double md = 16.0;
@@ -10,21 +9,18 @@ class AppSpacing {
   static const double xl = 32.0;
   static const double xxl = 48.0;
 
-  // Edge insets shortcuts
   static const EdgeInsets paddingXs = EdgeInsets.all(xs);
   static const EdgeInsets paddingSm = EdgeInsets.all(sm);
   static const EdgeInsets paddingMd = EdgeInsets.all(md);
   static const EdgeInsets paddingLg = EdgeInsets.all(lg);
   static const EdgeInsets paddingXl = EdgeInsets.all(xl);
 
-  // Horizontal padding
   static const EdgeInsets horizontalXs = EdgeInsets.symmetric(horizontal: xs);
   static const EdgeInsets horizontalSm = EdgeInsets.symmetric(horizontal: sm);
   static const EdgeInsets horizontalMd = EdgeInsets.symmetric(horizontal: md);
   static const EdgeInsets horizontalLg = EdgeInsets.symmetric(horizontal: lg);
   static const EdgeInsets horizontalXl = EdgeInsets.symmetric(horizontal: xl);
 
-  // Vertical padding
   static const EdgeInsets verticalXs = EdgeInsets.symmetric(vertical: xs);
   static const EdgeInsets verticalSm = EdgeInsets.symmetric(vertical: sm);
   static const EdgeInsets verticalMd = EdgeInsets.symmetric(vertical: md);
@@ -32,138 +28,95 @@ class AppSpacing {
   static const EdgeInsets verticalXl = EdgeInsets.symmetric(vertical: xl);
 }
 
-/// Border radius constants for consistent rounded corners
 class AppRadius {
   static const double sm = 8.0;
-  static const double md = 12.0;
-  static const double lg = 16.0;
-  static const double xl = 24.0;
+  static const double md = 16.0;
+  static const double lg = 24.0;
+  static const double xl = 32.0;
+  static const full = 999.0;
 }
 
-
-
-
-
-
-//TEXT STYLE
-
-/// Access via context.textStyles
 extension TextStyleContext on BuildContext {
   TextTheme get textStyles => Theme.of(this).textTheme;
+  ColorScheme get colors => Theme.of(this).colorScheme;
 }
 
-/// Helper methods for common text style modifications
 extension TextStyleExtensions on TextStyle {
-  /// Make text bold
   TextStyle get bold => copyWith(fontWeight: FontWeight.bold);
-
-  /// Make text semi-bold
   TextStyle get semiBold => copyWith(fontWeight: FontWeight.w600);
-
-  /// Make text medium weight
   TextStyle get medium => copyWith(fontWeight: FontWeight.w500);
-
-  /// Make text normal weight
   TextStyle get normal => copyWith(fontWeight: FontWeight.w400);
-
-  /// Make text light
   TextStyle get light => copyWith(fontWeight: FontWeight.w300);
-
-  /// Add custom color
   TextStyle withColor(Color color) => copyWith(color: color);
-
-  /// Add custom size
   TextStyle withSize(double size) => copyWith(fontSize: size);
 }
 
-
-
-
-
-
-//COLORS
-
-
-/// Chat-focused color palette for light mode
 class LightModeColors {
-  // Primary: Vibrant blue for chat UI
-  static const lightPrimary = Color(0xFF0088CC);
-  static const lightOnPrimary = Color(0xFFFFFFFF);
-  static const lightPrimaryContainer = Color(0xFFE3F2FD);
-  static const lightOnPrimaryContainer = Color(0xFF003A5D);
+  // Brand Colors (Telegram/Twitter Lite inspired)
+  static const primary = Color(0xFF00AAFF); // Vivid Blue, friendly and modern
+  static const onPrimary = Colors.white;
+  static const primaryContainer = Color(0xFFE1F5FE);
+  static const onPrimaryContainer = Color(0xFF003355);
 
-  // Secondary: Accent for sent messages
-  static const lightSecondary = Color(0xFF00A884);
-  static const lightOnSecondary = Color(0xFFFFFFFF);
+  static const secondary = Color(0xFF1DA1F2);
+  static const onSecondary = Colors.white;
 
-  // Tertiary: Accent color
-  static const lightTertiary = Color(0xFFFF6B6B);
-  static const lightOnTertiary = Color(0xFFFFFFFF);
-  
-  // Chat-specific colors
-  static const lightChatBubbleSent = Color(0xFFDCF8C6);
-  static const lightChatBubbleReceived = Color(0xFFFFFFFF);
-  static const lightChatBackground = Color(0xFFECE5DD);
+  static const tertiary = Color(0xFF657786); // Slate grey for subtitles
+  static const onTertiary = Colors.white;
 
-  // Error colors
-  static const lightError = Color(0xFFBA1A1A);
-  static const lightOnError = Color(0xFFFFFFFF);
-  static const lightErrorContainer = Color(0xFFFFDAD6);
-  static const lightOnErrorContainer = Color(0xFF410002);
+  static const error = Color(0xFFE0245E);
+  static const onError = Colors.white;
 
-  // Surface and background: High contrast for readability
-  static const lightSurface = Color(0xFFFBFCFD);
-  static const lightOnSurface = Color(0xFF1A1C1E);
-  static const lightBackground = Color(0xFFF7F9FA);
-  static const lightSurfaceVariant = Color(0xFFE2E8F0);
-  static const lightOnSurfaceVariant = Color(0xFF44474E);
+  // Modern Backgrounds
+  static const surface = Color(0xFFFFFFFF); // Pure white cards
+  static const background =
+      Color(0xFFF5F8FA); // Very light grey blue background
+  static const onSurface = Color(0xFF14171A); // Deep black-blue text
+  static const onBackground = Color(0xFF14171A);
 
-  // Outline and shadow
-  static const lightOutline = Color(0xFF74777F);
-  static const lightShadow = Color(0xFF000000);
-  static const lightInversePrimary = Color(0xFFACC7E3);
+  static const surfaceVariant = Color(0xFFE1E8ED); // Borders/Dividers
+  static const onSurfaceVariant = Color(0xFF657786); // Secondary text
+
+  static const outline = Color(0xFFAAB8C2);
+
+  // Chat Specific
+  static const chatBubbleSent = Color(0xFFE1F5FE); // Very light blue
+  static const chatBubbleReceived = Color(0xFFF5F8FA); // Light Grey
 }
 
-/// Chat-focused dark mode colors
 class DarkModeColors {
-  // Primary: Vibrant blue for dark mode
-  static const darkPrimary = Color(0xFF64B5F6);
-  static const darkOnPrimary = Color(0xFF003A5D);
-  static const darkPrimaryContainer = Color(0xFF0277BD);
-  static const darkOnPrimaryContainer = Color(0xFFE3F2FD);
+  // Brand Colors
+  static const primary = Color(0xFF1DA1F2); // Lighter Blue for Dark Mode
+  static const onPrimary = Colors.white;
+  static const primaryContainer = Color(0xFF004D73);
+  static const onPrimaryContainer = Color(0xFFB3E5FC);
 
-  // Secondary: Accent for sent messages
-  static const darkSecondary = Color(0xFF4DB6AC);
-  static const darkOnSecondary = Color(0xFF00251A);
+  static const secondary = Color(0xFF192734);
+  static const onSecondary = Colors.white;
 
-  // Tertiary: Accent color
-  static const darkTertiary = Color(0xFFFF8A80);
-  static const darkOnTertiary = Color(0xFF5F0000);
-  
-  // Chat-specific colors
-  static const darkChatBubbleSent = Color(0xFF056162);
-  static const darkChatBubbleReceived = Color(0xFF1E2C33);
-  static const darkChatBackground = Color(0xFF0B141A);
+  static const tertiary = Color(0xFF8899A6);
+  static const onTertiary = Color(0xFF15202B);
 
-  // Error colors
-  static const darkError = Color(0xFFFFB4AB);
-  static const darkOnError = Color(0xFF690005);
-  static const darkErrorContainer = Color(0xFF93000A);
-  static const darkOnErrorContainer = Color(0xFFFFDAD6);
+  static const error = Color(0xFFF4212E);
+  static const onError = Colors.white;
 
-  // Surface and background: True dark mode
-  static const darkSurface = Color(0xFF1A1C1E);
-  static const darkOnSurface = Color(0xFFE2E8F0);
-  static const darkSurfaceVariant = Color(0xFF44474E);
-  static const darkOnSurfaceVariant = Color(0xFFC4C7CF);
+  // Modern Dark Backgrounds (Twitter Dark / Telegram Night)
+  static const surface = Color(0xFF192734); // Dark Blue-Grey
+  static const background = Color(0xFF15202B); // Deep Navy
+  static const onSurface = Color(0xFFFFFFFF);
+  static const onBackground = Color(0xFFFFFFFF);
 
-  // Outline and shadow
-  static const darkOutline = Color(0xFF8E9099);
-  static const darkShadow = Color(0xFF000000);
-  static const darkInversePrimary = Color(0xFF5B7C99);
+  static const surfaceVariant =
+      Color(0xFF253341); // Slightly lighter for inputs/cards
+  static const onSurfaceVariant = Color(0xFF8899A6);
+
+  static const outline = Color(0xFF38444D);
+
+  // Chat Specific
+  static const chatBubbleSent = Color(0xFF1DA1F2);
+  static const chatBubbleReceived = Color(0xFF253341);
 }
 
-/// Font size constants
 class FontSizes {
   static const double displayLarge = 57.0;
   static const double displayMedium = 45.0;
@@ -172,8 +125,9 @@ class FontSizes {
   static const double headlineMedium = 28.0;
   static const double headlineSmall = 24.0;
   static const double titleLarge = 22.0;
-  static const double titleMedium = 16.0;
-  static const double titleSmall = 14.0;
+  static const double titleMedium =
+      18.0; // Slightly larger for better readability
+  static const double titleSmall = 15.0;
   static const double labelLarge = 14.0;
   static const double labelMedium = 12.0;
   static const double labelSmall = 11.0;
@@ -182,172 +136,207 @@ class FontSizes {
   static const double bodySmall = 12.0;
 }
 
-
-
-
-//THEMES
-
-/// Light theme with modern, neutral aesthetic
 ThemeData get lightTheme => ThemeData(
-  useMaterial3: true,
-  colorScheme: ColorScheme.light(
-    primary: LightModeColors.lightPrimary,
-    onPrimary: LightModeColors.lightOnPrimary,
-    primaryContainer: LightModeColors.lightPrimaryContainer,
-    onPrimaryContainer: LightModeColors.lightOnPrimaryContainer,
-    secondary: LightModeColors.lightSecondary,
-    onSecondary: LightModeColors.lightOnSecondary,
-    tertiary: LightModeColors.lightTertiary,
-    onTertiary: LightModeColors.lightOnTertiary,
-    error: LightModeColors.lightError,
-    onError: LightModeColors.lightOnError,
-    errorContainer: LightModeColors.lightErrorContainer,
-    onErrorContainer: LightModeColors.lightOnErrorContainer,
-    surface: LightModeColors.lightSurface,
-    onSurface: LightModeColors.lightOnSurface,
-    surfaceContainerHighest: LightModeColors.lightSurfaceVariant,
-    onSurfaceVariant: LightModeColors.lightOnSurfaceVariant,
-    outline: LightModeColors.lightOutline,
-    shadow: LightModeColors.lightShadow,
-    inversePrimary: LightModeColors.lightInversePrimary,
-  ),
-  brightness: Brightness.light,
-  scaffoldBackgroundColor: LightModeColors.lightBackground,
-  appBarTheme: const AppBarTheme(
-    backgroundColor: Colors.transparent,
-    foregroundColor: LightModeColors.lightOnSurface,
-    elevation: 0,
-    scrolledUnderElevation: 0,
-  ),
-  cardTheme: CardThemeData(
-    elevation: 0,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
-      side: BorderSide(
-        color: LightModeColors.lightOutline.withOpacity(0.2),
-        width: 1,
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: const ColorScheme.light(
+        primary: LightModeColors.primary,
+        onPrimary: LightModeColors.onPrimary,
+        primaryContainer: LightModeColors.primaryContainer,
+        onPrimaryContainer: LightModeColors.onPrimaryContainer,
+        secondary: LightModeColors.secondary,
+        onSecondary: LightModeColors.onSecondary,
+        secondaryContainer: LightModeColors.surfaceVariant,
+        tertiary: LightModeColors.tertiary,
+        onTertiary: LightModeColors.onTertiary,
+        error: LightModeColors.error,
+        onError: LightModeColors.onError,
+        surface: LightModeColors.surface,
+        onSurface: LightModeColors.onSurface,
+        surfaceContainerHighest: LightModeColors.surfaceVariant,
+        onSurfaceVariant: LightModeColors.onSurfaceVariant,
+        outline: LightModeColors.outline,
+        surfaceTint: Colors.transparent, // Remove surface tint
       ),
-    ),
-  ),
-  textTheme: _buildTextTheme(Brightness.light),
-);
+      scaffoldBackgroundColor: LightModeColors.background,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: LightModeColors.surface,
+        foregroundColor: LightModeColors.onSurface,
+        elevation: 0,
+        scrolledUnderElevation: 2,
+        centerTitle: true,
+      ),
+      cardTheme: CardThemeData(
+        color: LightModeColors.surface,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          side:
+              const BorderSide(color: LightModeColors.surfaceVariant, width: 1),
+        ),
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: LightModeColors.surface,
+        selectedItemColor: LightModeColors.primary,
+        unselectedItemColor: LightModeColors.onSurfaceVariant,
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: LightModeColors.surfaceVariant.withOpacity(0.3),
+        contentPadding: AppSpacing.paddingMd,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.full),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.full),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.full),
+          borderSide:
+              const BorderSide(color: LightModeColors.primary, width: 1.5),
+        ),
+        hintStyle: const TextStyle(color: LightModeColors.onSurfaceVariant),
+      ),
+      textTheme: _buildTextTheme(),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: LightModeColors.primary,
+          foregroundColor: LightModeColors.onPrimary,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.full)),
+          textStyle:
+              GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+      ),
+    );
 
-/// Dark theme with good contrast and readability
 ThemeData get darkTheme => ThemeData(
-  useMaterial3: true,
-  colorScheme: ColorScheme.dark(
-    primary: DarkModeColors.darkPrimary,
-    onPrimary: DarkModeColors.darkOnPrimary,
-    primaryContainer: DarkModeColors.darkPrimaryContainer,
-    onPrimaryContainer: DarkModeColors.darkOnPrimaryContainer,
-    secondary: DarkModeColors.darkSecondary,
-    onSecondary: DarkModeColors.darkOnSecondary,
-    tertiary: DarkModeColors.darkTertiary,
-    onTertiary: DarkModeColors.darkOnTertiary,
-    error: DarkModeColors.darkError,
-    onError: DarkModeColors.darkOnError,
-    errorContainer: DarkModeColors.darkErrorContainer,
-    onErrorContainer: DarkModeColors.darkOnErrorContainer,
-    surface: DarkModeColors.darkSurface,
-    onSurface: DarkModeColors.darkOnSurface,
-    surfaceContainerHighest: DarkModeColors.darkSurfaceVariant,
-    onSurfaceVariant: DarkModeColors.darkOnSurfaceVariant,
-    outline: DarkModeColors.darkOutline,
-    shadow: DarkModeColors.darkShadow,
-    inversePrimary: DarkModeColors.darkInversePrimary,
-  ),
-  brightness: Brightness.dark,
-  scaffoldBackgroundColor: DarkModeColors.darkSurface,
-  appBarTheme: const AppBarTheme(
-    backgroundColor: Colors.transparent,
-    foregroundColor: DarkModeColors.darkOnSurface,
-    elevation: 0,
-    scrolledUnderElevation: 0,
-  ),
-  cardTheme: CardThemeData(
-    elevation: 0,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
-      side: BorderSide(
-        color: DarkModeColors.darkOutline.withOpacity(0.2),
-        width: 1,
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: const ColorScheme.dark(
+        primary: DarkModeColors.primary,
+        onPrimary: DarkModeColors.onPrimary,
+        primaryContainer: DarkModeColors.primaryContainer,
+        onPrimaryContainer: DarkModeColors.onPrimaryContainer,
+        secondary: DarkModeColors.secondary,
+        onSecondary: DarkModeColors.onSecondary,
+        secondaryContainer: DarkModeColors.surfaceVariant,
+        tertiary: DarkModeColors.tertiary,
+        onTertiary: DarkModeColors.onTertiary,
+        error: DarkModeColors.error,
+        onError: DarkModeColors.onError,
+        surface: DarkModeColors.surface,
+        onSurface: DarkModeColors.onSurface,
+        surfaceContainerHighest: DarkModeColors.surfaceVariant,
+        onSurfaceVariant: DarkModeColors.onSurfaceVariant,
+        outline: DarkModeColors.outline,
+        surfaceTint: Colors.transparent,
       ),
-    ),
-  ),
-  textTheme: _buildTextTheme(Brightness.dark),
-);
+      scaffoldBackgroundColor: DarkModeColors.background,
+      appBarTheme: const AppBarTheme(
+        backgroundColor:
+            DarkModeColors.background, // Match background on dark mode
+        foregroundColor: DarkModeColors.onSurface,
+        elevation: 0,
+        scrolledUnderElevation: 2,
+        centerTitle: true,
+      ),
+      cardTheme: CardThemeData(
+        color: DarkModeColors.surface,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          side:
+              const BorderSide(color: DarkModeColors.surfaceVariant, width: 1),
+        ),
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: DarkModeColors.background,
+        selectedItemColor: DarkModeColors.primary,
+        unselectedItemColor: DarkModeColors.onSurfaceVariant,
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: DarkModeColors.surfaceVariant,
+        contentPadding: AppSpacing.paddingMd,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.full),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.full),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.full),
+          borderSide:
+              const BorderSide(color: DarkModeColors.primary, width: 1.5),
+        ),
+        hintStyle: const TextStyle(color: DarkModeColors.onSurfaceVariant),
+      ),
+      textTheme: _buildTextTheme(),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: DarkModeColors.primary,
+          foregroundColor: DarkModeColors.onPrimary,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.full)),
+          textStyle:
+              GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+      ),
+    );
 
-/// Build text theme using Inter font family
-TextTheme _buildTextTheme(Brightness brightness) {
+TextTheme _buildTextTheme() {
   return TextTheme(
     displayLarge: GoogleFonts.inter(
-      fontSize: FontSizes.displayLarge,
-      fontWeight: FontWeight.w400,
-      letterSpacing: -0.25,
-    ),
+        fontSize: FontSizes.displayLarge, fontWeight: FontWeight.bold),
     displayMedium: GoogleFonts.inter(
-      fontSize: FontSizes.displayMedium,
-      fontWeight: FontWeight.w400,
-    ),
+        fontSize: FontSizes.displayMedium, fontWeight: FontWeight.bold),
     displaySmall: GoogleFonts.inter(
-      fontSize: FontSizes.displaySmall,
-      fontWeight: FontWeight.w400,
-    ),
+        fontSize: FontSizes.displaySmall, fontWeight: FontWeight.bold),
     headlineLarge: GoogleFonts.inter(
-      fontSize: FontSizes.headlineLarge,
-      fontWeight: FontWeight.w600,
-      letterSpacing: -0.5,
-    ),
+        fontSize: FontSizes.headlineLarge, fontWeight: FontWeight.bold),
     headlineMedium: GoogleFonts.inter(
-      fontSize: FontSizes.headlineMedium,
-      fontWeight: FontWeight.w600,
-    ),
+        fontSize: FontSizes.headlineMedium, fontWeight: FontWeight.w600),
     headlineSmall: GoogleFonts.inter(
-      fontSize: FontSizes.headlineSmall,
-      fontWeight: FontWeight.w600,
-    ),
+        fontSize: FontSizes.headlineSmall, fontWeight: FontWeight.w600),
     titleLarge: GoogleFonts.inter(
-      fontSize: FontSizes.titleLarge,
-      fontWeight: FontWeight.w600,
-    ),
+        fontSize: FontSizes.titleLarge, fontWeight: FontWeight.bold),
     titleMedium: GoogleFonts.inter(
-      fontSize: FontSizes.titleMedium,
-      fontWeight: FontWeight.w500,
-    ),
+        fontSize: FontSizes.titleMedium, fontWeight: FontWeight.w600),
     titleSmall: GoogleFonts.inter(
-      fontSize: FontSizes.titleSmall,
-      fontWeight: FontWeight.w500,
-    ),
+        fontSize: FontSizes.titleSmall, fontWeight: FontWeight.w600),
     labelLarge: GoogleFonts.inter(
-      fontSize: FontSizes.labelLarge,
-      fontWeight: FontWeight.w500,
-      letterSpacing: 0.1,
-    ),
+        fontSize: FontSizes.labelLarge, fontWeight: FontWeight.w600),
     labelMedium: GoogleFonts.inter(
-      fontSize: FontSizes.labelMedium,
-      fontWeight: FontWeight.w500,
-      letterSpacing: 0.5,
-    ),
+        fontSize: FontSizes.labelMedium, fontWeight: FontWeight.w500),
     labelSmall: GoogleFonts.inter(
-      fontSize: FontSizes.labelSmall,
-      fontWeight: FontWeight.w500,
-      letterSpacing: 0.5,
-    ),
+        fontSize: FontSizes.labelSmall, fontWeight: FontWeight.w500),
     bodyLarge: GoogleFonts.inter(
-      fontSize: FontSizes.bodyLarge,
-      fontWeight: FontWeight.w400,
-      letterSpacing: 0.15,
-    ),
+        fontSize: FontSizes.bodyLarge, fontWeight: FontWeight.normal),
     bodyMedium: GoogleFonts.inter(
-      fontSize: FontSizes.bodyMedium,
-      fontWeight: FontWeight.w400,
-      letterSpacing: 0.25,
-    ),
+        fontSize: FontSizes.bodyMedium, fontWeight: FontWeight.normal),
     bodySmall: GoogleFonts.inter(
-      fontSize: FontSizes.bodySmall,
-      fontWeight: FontWeight.w400,
-      letterSpacing: 0.4,
-    ),
+        fontSize: FontSizes.bodySmall, fontWeight: FontWeight.normal),
   );
 }
 
