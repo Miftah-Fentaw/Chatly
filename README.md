@@ -1,6 +1,6 @@
 # Chatly
 
-A simple chat app built with Flutter — for real‑time communication across platforms (Android, iOS, Web, Desktop).  
+A simple chat app built with Flutter — for real‑time communication 
 
 ---
 
