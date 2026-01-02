@@ -5,12 +5,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:chatapp/screens/chat_list_screen.dart';
 import 'package:chatapp/screens/profile_screen.dart';
-import 'package:flutter_snake_navigationbar/flutter_snake_navigationbar.dart';
 
-final GlobalKey<_MainNavScreenState> mainNavKey = GlobalKey<_MainNavScreenState>();
+final GlobalKey<_MainNavScreenState> mainNavKey =
+    GlobalKey<_MainNavScreenState>();
 
 class MainNavScreen extends StatefulWidget {
-  MainNavScreen({Key? key, this.initialIndex = 0}) : super(key: key ?? mainNavKey);
+  MainNavScreen({Key? key, this.initialIndex = 0})
+      : super(key: key ?? mainNavKey);
 
   final int initialIndex;
 
@@ -21,7 +22,7 @@ class MainNavScreen extends StatefulWidget {
 class _MainNavScreenState extends State<MainNavScreen> {
   late int _currentIndex;
 
-  final List<Widget> _pages =  [
+  final List<Widget> _pages = [
     HomeScreen(),
     ChatListScreen(),
     PostScreen(),
@@ -43,31 +44,60 @@ class _MainNavScreenState extends State<MainNavScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: _pages[_currentIndex]),
-     bottomNavigationBar: SnakeNavigationBar.color(
-        behaviour: SnakeBarBehaviour.pinned,
-        snakeShape: SnakeShape.indicator,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
-        snakeViewColor: Theme.of(context).textTheme.bodySmall?.color,
-        selectedItemColor:  Theme.of(context).textTheme.bodySmall?.color,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: false,
-        showSelectedLabels: true,
-        height: MediaQuery.of(context).size.height * 0.08,
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.chat_bubble), label: 'messages'),
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.add), label: 'Post'),
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.bell), label: 'notification'),
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.person), label: 'Profile'),
-        ],
+      // Extend body behind navbar for transparency effects if desired,
+      // but standard Material 3 usually keeps them separate or uses translucent scrims.
+      // For now, standard layout is safer to avoid content overlap.
+      body: _pages[_currentIndex],
+
+      bottomNavigationBar: NavigationBarTheme(
+        data: NavigationBarThemeData(
+          labelTextStyle: MaterialStateProperty.resolveWith((states) {
+            if (states.contains(MaterialState.selected)) {
+              return const TextStyle(fontWeight: FontWeight.w600, fontSize: 12);
+            }
+            return const TextStyle(fontWeight: FontWeight.normal, fontSize: 12);
+          }),
+        ),
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          // Modern styling from Theme is applied automatically,
+          // but we can override specific behaviors here.
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          height: 70,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(CupertinoIcons.home),
+              selectedIcon: Icon(CupertinoIcons.house_fill),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(CupertinoIcons.chat_bubble),
+              selectedIcon: Icon(CupertinoIcons.chat_bubble_fill),
+              label: 'Messages',
+            ),
+            NavigationDestination(
+              icon: Icon(CupertinoIcons.plus_app), // Distinct add icon
+              selectedIcon: Icon(CupertinoIcons.plus_app_fill),
+              label: 'Post',
+            ),
+            NavigationDestination(
+              icon: Icon(CupertinoIcons.bell),
+              selectedIcon: Icon(CupertinoIcons.bell_fill),
+              label:
+                  'Activity', // "Activity" is often more modern than "Notification"
+            ),
+            NavigationDestination(
+              icon: Icon(CupertinoIcons.person),
+              selectedIcon: Icon(CupertinoIcons.person_fill),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }

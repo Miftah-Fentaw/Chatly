@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:chatapp/providers/auth_provider.dart';
+import 'package:chatapp/theme.dart';
 
 class ResetSentScreen extends StatefulWidget {
   const ResetSentScreen({super.key});
@@ -64,6 +65,8 @@ class _ResetSentScreenState extends State<ResetSentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reset Link Sent'),
@@ -71,42 +74,66 @@ class _ResetSentScreenState extends State<ResetSentScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
+      extendBodyBehindAppBar: true,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: AppSpacing.paddingLg,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 24),
-              Icon(Icons.mark_email_read_outlined, size: 86, color: Theme.of(context).colorScheme.primary),
+              Icon(Icons.mark_email_read_outlined,
+                  size: 86, color: theme.colorScheme.primary),
               const SizedBox(height: 24),
               Text(
                 'Check your email',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
                 'We have sent a password reset link to',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
                 _email,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary),
+                style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: (_cooldown == 0 && !_isResending) ? _resend : null,
-                child: _isResending
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text(_cooldown > 0 ? 'Resend ($_cooldown)' : 'Resend Email'),
+              const SizedBox(height: 48),
+              SizedBox(
+                height: 56,
+                child: FilledButton(
+                  onPressed: (_cooldown == 0 && !_isResending) ? _resend : null,
+                  child: _isResending
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : Text(_cooldown > 0
+                          ? 'Resend ($_cooldown)'
+                          : 'Resend Email'),
+                ),
               ),
               const SizedBox(height: 12),
               OutlinedButton(
                 onPressed: () => context.go('/login'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
                 child: const Text('Back to Login'),
               ),
             ],

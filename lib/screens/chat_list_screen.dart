@@ -24,7 +24,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = context.read<AuthProvider>();
       if (authProvider.currentUser != null) {
-        context.read<ChatProvider>().loadChats(authProvider.currentUser!.id, useCache: true);
+        context
+            .read<ChatProvider>()
+            .loadChats(authProvider.currentUser!.id, useCache: true);
       }
     });
   }
@@ -35,23 +37,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
     super.dispose();
   }
 
-  void _toggleSearch() {
-    setState(() {
-      _isSearching = !_isSearching;
-    });
-
-    final authProvider = context.read<AuthProvider>();
-    final chatProvider = context.read<ChatProvider>();
-
-    if (_isSearching) {
-      chatProvider.searchUsers('', authProvider.currentUser!.id);
-    } else {
-      _searchController.clear();
-      chatProvider.clearSearchResults();
-    }
-  }
-
-  Future<void> _startNewChat(UserModel user) async {
+  void _startNewChat(UserModel user) async {
     final authProvider = context.read<AuthProvider>();
     final chatProvider = context.read<ChatProvider>();
 
@@ -64,8 +50,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
       context.push('/chat/${chat.id}', extra: user);
       setState(() => _isSearching = false);
       _searchController.clear();
+      chatProvider.clearSearchResults();
     } else {
-      final msg = chatProvider.errorMessage ?? 'Unable to open chat. Please try again.';
+      final msg = chatProvider.errorMessage ?? 'Unable to open chat.';
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg)),
@@ -76,54 +63,60 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: _isSearching
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
+                style: theme.textTheme.bodyLarge,
                 decoration: InputDecoration(
-                  hintText: 'Search users...',
+                  hintText: 'Search people...',
                   border: InputBorder.none,
-                  hintStyle: TextStyle(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                  focusedBorder: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  hintStyle: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
                   ),
                 ),
                 onChanged: (query) {
                   final authProvider = context.read<AuthProvider>();
                   context.read<ChatProvider>().searchUsers(
-                    query,
-                    authProvider.currentUser!.id,
-                  );
+                        query,
+                        authProvider.currentUser!.id,
+                      );
                 },
               )
-            : Text(
-                'messages',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-
+            : const Text('Messages',
+                style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: Icon(_isSearching ? Icons.close : Icons.search),
-            onPressed: _toggleSearch,
+            onPressed: () {
+              setState(() {
+                _isSearching = !_isSearching;
+                if (!_isSearching) {
+                  _searchController.clear();
+                  context.read<ChatProvider>().clearSearchResults();
+                }
+              });
+            },
           ),
-
-
         ],
       ),
       body: _isSearching ? _buildSearchResults() : _buildChatList(),
       floatingActionButton: _isSearching
           ? null
           : FloatingActionButton(
-              onPressed: _toggleSearch,
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              child: const Icon(Icons.person_add, color: Colors.white),
+              onPressed: () {
+                setState(() {
+                  _isSearching = true;
+                });
+              },
+              child: const Icon(Icons.edit_outlined),
             ),
-
     );
   }
 
@@ -134,45 +127,36 @@ class _ChatListScreenState extends State<ChatListScreen> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (chatProvider.searchResults.isEmpty) {
+        if (chatProvider.searchResults.isEmpty &&
+            _searchController.text.isNotEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.search_off,
-                  size: 64,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                ),
+                Icon(Icons.person_off_outlined,
+                    size: 64, color: Theme.of(context).colorScheme.outline),
                 const SizedBox(height: 16),
-                Text(
-                  'No users found',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
+                const Text('No users found'),
               ],
             ),
           );
         }
 
-        return ListView.builder(
+        return ListView.separated(
           itemCount: chatProvider.searchResults.length,
+          separatorBuilder: (c, i) => const Divider(height: 1, indent: 72),
           itemBuilder: (context, index) {
             final user = chatProvider.searchResults[index];
             return ListTile(
-              leading: UserAvatar(
-                user: user,
-                radius: 24,
-                showOnlineStatus: true,
-              ),
-              title: Text(
-                user.username,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              subtitle: Text(user.email!),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              leading:
+                  UserAvatar(user: user, radius: 24, showOnlineStatus: true),
+              title: Text(user.username,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: Text(user.email ?? '',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
               onTap: () => _startNewChat(user),
             );
           },
@@ -194,26 +178,24 @@ class _ChatListScreenState extends State<ChatListScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.chat_bubble_outline,
-                  size: 64,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  Icons.chat_bubble_outline_rounded,
+                  size: 80,
+                  color: Theme.of(context).colorScheme.primaryContainer,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 Text(
-                  'No chats yet',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                  'No messages yet',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Tap the + button to start a new chat',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
+                  'Start a conversation with a friend!',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                 ),
               ],
             ),
@@ -228,8 +210,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
               useCache: false,
             );
           },
-          child: ListView.builder(
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: chatProvider.chats.length,
+            separatorBuilder: (c, i) =>
+                const Divider(height: 1, indent: 84, endIndent: 16),
             itemBuilder: (context, index) {
               final chat = chatProvider.chats[index];
               final authProvider = context.read<AuthProvider>();
@@ -244,57 +229,74 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 ),
               );
 
+              final isUnread = chat.unreadCount > 0;
+              final theme = Theme.of(context);
+
               return ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 leading: UserAvatar(
-                  user: otherUser,
-                  radius: 24,
-                  showOnlineStatus: true,
-                ),
-                title: Text(
-                  otherUser.username,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  chat.lastMessage?.content ?? 'No messages yet',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                    user: otherUser, radius: 28, showOnlineStatus: true),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Expanded(
+                      child: Text(
+                        otherUser.username,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight:
+                              isUnread ? FontWeight.bold : FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                     if (chat.lastMessageTime != null)
                       Text(
-                        DateFormat('HH:mm').format(chat.lastMessageTime!.toDate()),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        _formatTime(chat.lastMessageTime!.toDate()),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: isUnread
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.onSurfaceVariant,
+                          fontWeight:
+                              isUnread ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
-                    if (chat.unreadCount > 0) ...[
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
+                  ],
+                ),
+                subtitle: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        chat.lastMessage?.content ?? '',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isUnread
+                              ? theme.colorScheme.onSurface
+                              : theme.colorScheme.onSurfaceVariant,
+                          fontWeight:
+                              isUnread ? FontWeight.w500 : FontWeight.normal,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (chat.unreadCount > 0)
+                      Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(10),
+                          color: theme.colorScheme.primary,
+                          shape: BoxShape.circle,
                         ),
                         child: Text(
-                          '${chat.unreadCount}',
+                          chat.unreadCount > 9 ? '9+' : '${chat.unreadCount}',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 12,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                    ],
                   ],
                 ),
                 onTap: () => context.push('/chat/${chat.id}', extra: otherUser),
@@ -304,5 +306,16 @@ class _ChatListScreenState extends State<ChatListScreen> {
         );
       },
     );
+  }
+
+  String _formatTime(DateTime dt) {
+    final now = DateTime.now();
+    if (now.difference(dt).inDays == 0) {
+      return DateFormat('HH:mm').format(dt);
+    } else if (now.difference(dt).inDays < 7) {
+      return DateFormat('E').format(dt);
+    } else {
+      return DateFormat('MM/dd').format(dt);
+    }
   }
 }

@@ -79,23 +79,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark
-        ? const Color(0xFF0B141A)
-        : const Color(0xFFECE5DD);
+    // The theme controls the background now (defined in theme.dart as scaffoldBackgroundColor),
+    // but for chat specifically we might want a slightly different background or a pattern.
+    // For a modern "Telegram/Twitter" look, the solid theme background is usually fine.
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      // CustomAppBar needs to be checked/updated or replaced with standard AppBar if it's too legacy.
+      // Assuming CustomAppBar provides the profile info.
       appBar: CustomAppBar(
         user: widget.otherUser,
         actions: [
           IconButton(
             icon: const Icon(Icons.videocam_outlined),
             onPressed: () {},
+            tooltip: 'Video Call',
           ),
           IconButton(
             icon: const Icon(Icons.call_outlined),
             onPressed: () {},
+            tooltip: 'Audio Call',
           ),
           PopupMenuButton(
             icon: const Icon(Icons.more_vert),
@@ -112,9 +114,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               const PopupMenuItem(
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline, size: 20),
+                    Icon(Icons.delete_outline, size: 20, color: Colors.red),
                     SizedBox(width: 12),
-                    Text('Delete chat'),
+                    Text('Delete chat', style: TextStyle(color: Colors.red)),
                   ],
                 ),
               ),
@@ -127,7 +129,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           Expanded(
             child: Consumer<ChatProvider>(
               builder: (context, chatProvider, child) {
-                if (chatProvider.isLoadingMessages && chatProvider.currentMessages.isEmpty) {
+                if (chatProvider.isLoadingMessages &&
+                    chatProvider.currentMessages.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
@@ -136,39 +139,60 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.chat_bubble_outline,
-                          size: 64,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.chat_bubble_outline,
+                            size: 48,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No messages yet',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Start the conversation!',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                          'Say hello to ${widget.otherUser.username}!',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
                         ),
                       ],
                     ),
                   );
                 }
 
-                WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+                WidgetsBinding.instance
+                    .addPostFrameCallback((_) => _scrollToBottom());
 
                 return ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(vertical: 16),                  itemCount: chatProvider.currentMessages.length,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                  itemCount: chatProvider.currentMessages.length,
                   itemBuilder: (context, index) {
                     final message = chatProvider.currentMessages[index];
                     final authProvider = context.read<AuthProvider>();
-                    final isSent = message.senderId == authProvider.currentUser!.id;
+                    final isSent =
+                        message.senderId == authProvider.currentUser!.id;
 
                     return ChatBubble(
                       message: message,
